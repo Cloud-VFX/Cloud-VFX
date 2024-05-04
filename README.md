@@ -12,5 +12,3 @@ Refer to the `README.md` files of the sub-projects to get more details about eac
 
 1. Make sure your `JAVA_HOME` environment variable is set to Java 11+ distribution
 2. Run `mvn clean package`
-
-# Test signed commmits
