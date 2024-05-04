@@ -1,5 +1,6 @@
 # Java runtime
 JAVA = java
+MVN = mvn
 
 # Default make target
 .DEFAULT_GOAL := help
@@ -23,7 +24,7 @@ webserver:
 
 # Build target
 build:
-	@echo "Building $(PROJECT)..."
+	@echo "Building ..."
 	$(MVN) clean package
 
 # Run target
