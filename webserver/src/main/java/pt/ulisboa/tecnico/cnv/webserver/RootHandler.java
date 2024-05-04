@@ -19,11 +19,11 @@ public class RootHandler implements HttpHandler {
             return;
         }
 
-        // parse request
-        URI requestedUri = he.getRequestURI();
-        String query = requestedUri.getRawQuery();
-        System.out.println(query);
-
-        he.sendResponseHeaders(200, 0);
+        // Send "Hello, World!" response
+        String response = "Hello, World!";
+        he.sendResponseHeaders(200, response.length());
+        OutputStream os = he.getResponseBody();
+        os.write(response.getBytes());
+        os.close();
     }
 }
