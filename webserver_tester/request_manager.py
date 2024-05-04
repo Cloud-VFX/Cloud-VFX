@@ -20,9 +20,7 @@ class RequestManager:
             return response.content, duration, None
         except Exception as e:
             duration = time.perf_counter() - start
-            # Log the error with sufficient information
             logger = logging.getLogger('WebServerTester')
-            print(f"Request failed for {file_path} to {url}: {str(e)}")
             logger.error(f"Request failed for {file_path} to {url}: {str(e)}")
             return None, duration, e
 
