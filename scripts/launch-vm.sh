@@ -4,8 +4,8 @@ source config.sh
 
 # Run new instance.
 aws ec2 run-instances \
-	--image-id resolve:ssm:/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2 \
-	--instance-type t2.micro \
+	--image-id ami-04b70fa74e45c3917 \
+	--instance-type t3.micro \
 	--key-name $AWS_KEYPAIR_NAME \
 	--security-group-ids $AWS_SECURITY_GROUP \
 	--monitoring Enabled=true | jq -r ".Instances[0].InstanceId" > instance.id

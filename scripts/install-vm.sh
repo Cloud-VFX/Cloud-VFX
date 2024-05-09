@@ -4,13 +4,15 @@ source config.sh
 
 # Install Java, Maven, and other dependencies.
 echo "Installing Java, Maven, and other dependencies..."
-cmd="sudo yum update -y; sudo yum install java-11-amazon-corretto.x86_64 make maven -y;"
+cmd="sudo apt update && sudo apt install openjdk-11-jdk make maven -y"
 ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ec2-user@$(cat instance.dns) $cmd
 echo "Java, Maven, and other dependencies installed."
 
 # Zip the project.
 echo "Zipping the project..."
-zip -r project.zip $DIR/../imageproc $DIR/../raytracer $DIR/../webserver $DIR/../Makefile $DIR/../pom.xml
+cd "$DIR"/../
+zip -r $DIR/project.zip imageproc raytracer webserver Makefile pom.xml
+cd $DIR
 echo "Project zipped."
 
 # Transfer the project to the server.
@@ -26,7 +28,7 @@ echo "Project unzipped and environment prepared."
 
 # Create a startup script.
 echo "Creating a startup script..."
-startup_script="#!/bin/bash\n cd /home/ec2-user/\n make webserver"
+startup_script='#!/bin/bash\ncd /home/ec2-user/\nmake webserver'
 echo -e $startup_script | ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ec2-user@$(cat instance.dns) "cat > /home/ec2-user/start-webserver.sh; chmod +x /home/ec2-user/start-webserver.sh"
 echo "Startup script created."
 
