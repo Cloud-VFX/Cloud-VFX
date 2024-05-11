@@ -22,6 +22,10 @@ webserver:
 	@echo "Building and running Web Server..."
 	$(MAKE) run PROJECT=webserver CLASS=pt.ulisboa.tecnico.cnv.webserver.WebServer ARGS=""
 
+webserver-javassist:
+	@echo "Building and running Web Server with Javassist..."
+	$(MAKE) run-javassist PROJECT=webserver CLASS=pt.ulisboa.tecnico.cnv.webserver.WebServer JAVASSIST_TOOL=$(JAVASSIST_TOOL) ARGS=""
+
 # Build target
 build:
 	@echo "Building ..."
@@ -31,6 +35,10 @@ build:
 run:
 	@echo "Running $(PROJECT)..."
 	$(JAVA) -cp $(PROJECT)/target/$(PROJECT)-1.0.0-SNAPSHOT-jar-with-dependencies.jar $(CLASS) $(INPUT_FILE) $(OUTPUT_FILE) $(ARGS)
+
+run-javassist:
+	@echo "Running $(PROJECT)... with Javassist"
+	$(JAVA) -cp $(PROJECT)/target/$(PROJECT)-1.0.0-SNAPSHOT-jar-with-dependencies.jar -javaagent:JavassistWrapper/target/JavassistWrapper-1.0-jar-with-dependencies.jar=$(JAVASSIST_TOOL):pt.ulisboa.tecnico.cnv.webserver:output $(CLASS) $(INPUT_FILE) $(OUTPUT_FILE) $(ARGS)
 
 # Help target
 help:

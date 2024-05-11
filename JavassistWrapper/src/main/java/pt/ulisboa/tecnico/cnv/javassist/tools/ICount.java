@@ -5,56 +5,64 @@ import java.util.List;
 import javassist.CannotCompileException;
 import javassist.CtBehavior;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class ICount extends CodeDumper {
 
-    /**
-     * Number of executed basic blocks.
-     */
-    private static long nblocks = 0;
+    public static class Metrics {
+        public long nblocks = 0;
+        public long nmethods = 0;
+        public long ninsts = 0;
+    }
 
-    /**
-     * Number of executed methods.
-     */
-    private static long nmethods = 0;
-
-    /**
-     * Number of executed instructions.
-     */
-    private static long ninsts = 0;
+    private static final ConcurrentHashMap<Long, Metrics> metricsMap = new ConcurrentHashMap<>();
 
     public ICount(List<String> packageNameList, String writeDestination) {
         super(packageNameList, writeDestination);
     }
 
     public static void incBasicBlock(int position, int length) {
-        nblocks++;
-        ninsts += length;
+        long threadId = Thread.currentThread().threadId();
+        metricsMap.computeIfAbsent(threadId, k -> new Metrics()).nblocks++;
+        metricsMap.get(threadId).ninsts += length;
     }
 
     public static void incBehavior(String name) {
-        nmethods++;
+        long threadId = Thread.currentThread().threadId();
+        metricsMap.computeIfAbsent(threadId, k -> new Metrics()).nmethods++;
     }
 
     public static void printStatistics() {
-        System.out.println(String.format("[%s] Number of executed methods: %s", ICount.class.getSimpleName(), nmethods));
-        System.out.println(String.format("[%s] Number of executed basic blocks: %s", ICount.class.getSimpleName(), nblocks));
-        System.out.println(String.format("[%s] Number of executed instructions: %s", ICount.class.getSimpleName(), ninsts));
+        long threadId = Thread.currentThread().threadId();
+        Metrics m = metricsMap.get(threadId);
+        if (m != null) {
+            System.out.println(String.format("[%s][Thread %d] Number of executed methods: %s",
+                    ICount.class.getSimpleName(), threadId, m.nmethods));
+            System.out.println(String.format("[%s][Thread %d] Number of executed basic blocks: %s",
+                    ICount.class.getSimpleName(), threadId, m.nblocks));
+            System.out.println(String.format("[%s][Thread %d] Number of executed instructions: %s",
+                    ICount.class.getSimpleName(), threadId, m.ninsts));
+        }
+    }
+
+    public static void clearStatistics() {
+        long threadId = Thread.currentThread().threadId();
+        metricsMap.remove(threadId);
     }
 
     @Override
     protected void transform(CtBehavior behavior) throws Exception {
         super.transform(behavior);
         behavior.insertAfter(String.format("%s.incBehavior(\"%s\");", ICount.class.getName(), behavior.getLongName()));
-
-        if (behavior.getName().equals("main")) {
-            behavior.insertAfter(String.format("%s.printStatistics();", ICount.class.getName()));
-        }
+        behavior.insertAfter(String.format("%s.printStatistics();", ICount.class.getName()));
+        behavior.insertAfter(String.format("%s.clearStatistics();", ICount.class.getName()));
     }
 
     @Override
     protected void transform(BasicBlock block) throws CannotCompileException {
         super.transform(block);
-        block.behavior.insertAt(block.line, String.format("%s.incBasicBlock(%s, %s);", ICount.class.getName(), block.getPosition(), block.getLength()));
+        block.behavior.insertAt(block.line, String.format("%s.incBasicBlock(%s, %s);", ICount.class.getName(),
+                block.getPosition(), block.getLength()));
     }
 
 }
