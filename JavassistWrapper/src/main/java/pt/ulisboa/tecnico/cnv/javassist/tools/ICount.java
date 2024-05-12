@@ -32,16 +32,16 @@ public class ICount extends CodeDumper {
         metricsMap.computeIfAbsent(threadId, k -> new Metrics()).nmethods++;
     }
 
-    public static void printStatistics() {
+    public static void printStatistics(String name) {
         long threadId = Thread.currentThread().threadId();
         Metrics m = metricsMap.get(threadId);
         if (m != null) {
-            System.out.println(String.format("[%s][Thread %d] Number of executed methods: %s",
-                    ICount.class.getSimpleName(), threadId, m.nmethods));
-            System.out.println(String.format("[%s][Thread %d] Number of executed basic blocks: %s",
-                    ICount.class.getSimpleName(), threadId, m.nblocks));
-            System.out.println(String.format("[%s][Thread %d] Number of executed instructions: %s",
-                    ICount.class.getSimpleName(), threadId, m.ninsts));
+            System.out.println(String.format("[%s][%s][Thread %d] Number of executed methods: %s",
+                    ICount.class.getSimpleName(), name, threadId, m.nmethods));
+            System.out.println(String.format("[%s][%s][Thread %d] Number of executed basic blocks: %s",
+                    ICount.class.getSimpleName(), name, threadId, m.nblocks));
+            System.out.println(String.format("[%s][%s][Thread %d] Number of executed instructions: %s",
+                    ICount.class.getSimpleName(), name, threadId, m.ninsts));
         }
     }
 
@@ -54,7 +54,7 @@ public class ICount extends CodeDumper {
     protected void transform(CtBehavior behavior) throws Exception {
         super.transform(behavior);
         behavior.insertAfter(String.format("%s.incBehavior(\"%s\");", ICount.class.getName(), behavior.getLongName()));
-        behavior.insertAfter(String.format("%s.printStatistics();", ICount.class.getName()));
+        behavior.insertAfter(String.format("%s.printStatistics((\"%s\"));", ICount.class.getName(), behavior.getLongName()));
         behavior.insertAfter(String.format("%s.clearStatistics();", ICount.class.getName()));
     }
 
