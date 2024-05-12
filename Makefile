@@ -38,7 +38,7 @@ run:
 
 run-javassist:
 	@echo "Running $(PROJECT)... with Javassist"
-	$(JAVA) -cp $(PROJECT)/target/$(PROJECT)-1.0.0-SNAPSHOT-jar-with-dependencies.jar -javaagent:JavassistWrapper/target/JavassistWrapper-1.0-jar-with-dependencies.jar=$(JAVASSIST_TOOL):pt.ulisboa.tecnico.cnv.webserver:output $(CLASS) $(INPUT_FILE) $(OUTPUT_FILE) $(ARGS)
+	$(JAVA) -cp $(PROJECT)/target/$(PROJECT)-1.0.0-SNAPSHOT-jar-with-dependencies.jar -javaagent:JavassistWrapper/target/JavassistWrapper-1.0-jar-with-dependencies.jar=$(JAVASSIST_TOOL):pt.ulisboa.tecnico.cnv.webserver,pt.ulisboa.tecnico.cnv.imageproc,pt.ulisboa.tecnico.cnv.raytracer:output $(CLASS) $(INPUT_FILE) $(OUTPUT_FILE) $(ARGS)
 
 # Help target
 help:
