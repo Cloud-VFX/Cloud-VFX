@@ -9,13 +9,17 @@ public class GetClassAttributes extends AbstractJavassistTool {
         super(packageNameList, writeDestination);
     }
 
-    private final String ImageProcessingHandlerDeclaringClass = "pt.ulisboa.tecnico.cnv.imageproc.ImageProcessingHandler";
     private final String BlurImageHandlerDeclaringClass = "pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler";
     private final String EnhanceImageHandlerDeclaringClass = "pt.ulisboa.tecnico.cnv.imageproc.EnhanceImageHandler";
     private final String RaytracerHandlerDeclaringClass = "pt.ulisboa.tecnico.cnv.raytracer.RaytracerHandler";
 
     private final String HandleRequestMethodName = "handleRequest";
     private final String ProcessMethodName = "process";
+
+    public static double getCurrentRAMUsage() {
+        long currentMemoryUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        return (double) currentMemoryUsed / (1024 * 1024); // Convert to MB
+    }
 
     /**
      * Need to define the correct method signature for the raytracer
@@ -29,24 +33,15 @@ public class GetClassAttributes extends AbstractJavassistTool {
      * the ray tracer
      */
 
-    private void handleImageProcessingHandleRequestMethod(CtBehavior behavior) throws Exception {
-        // This will insert the Image Width and Height metrics logic
-        behavior.insertAfter("{"
-                + "java.awt.image.BufferedImage bi = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(java.util.Base64.getDecoder().decode($1)));"
-                + "System.out.println(\"Class: \" + getClass().getName() + \", Method: handleRequest, Image Width: \" + bi.getWidth() + \", Image Height: \" + bi.getHeight());"
-                + "}", true);
-    }
+    private void setImageSizeAndMetricType(CtBehavior behavior, String metricType) throws Exception {
+        // Use the BufferedImage parameter ($1) to get the image size
+        behavior.insertBefore(
+                "pt.ulisboa.tecnico.cnv.webserver.MetricsContext.setImageSize($1.getWidth() * $1.getHeight());");
 
-    private void handleImageProcessingHandler(CtBehavior behavior) throws Exception {
-        String methodName = behavior.getName();
-
-        // Will handle the `handleRequest` method
-        if (methodName.equals(HandleRequestMethodName)) {
-            if (behavior.getSignature().equals("(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;")) {
-                handleImageProcessingHandleRequestMethod(behavior);
-            }
-        }
-        // Add other methods here for the ImageProcessingHandler
+        // Set the metric type to metricType
+        behavior.insertBefore(
+                "pt.ulisboa.tecnico.cnv.webserver.MetricsContext.setMetricType(pt.ulisboa.tecnico.cnv.webserver.RequestMetrics.MetricType."
+                        + metricType + ");");
     }
 
     private void handleBlurImageHandler(CtBehavior behavior) throws Exception {
@@ -54,7 +49,7 @@ public class GetClassAttributes extends AbstractJavassistTool {
 
         // Will handle the `process` method
         if (methodName.equals(ProcessMethodName)) {
-            System.out.println("Handling handleBlurImageHandler process method");
+            setImageSizeAndMetricType(behavior, "BLUR");
         }
         // Add other methods here for the BlurImageHandler
     }
@@ -64,7 +59,7 @@ public class GetClassAttributes extends AbstractJavassistTool {
 
         // Will handle the `process` method
         if (methodName.equals(ProcessMethodName)) {
-            System.out.println("Handling EnchangeImageHandler process method");
+            setImageSizeAndMetricType(behavior, "ENHANCE");
         }
 
         // Add other methods here for the EnhanceImageHandler
@@ -86,9 +81,6 @@ public class GetClassAttributes extends AbstractJavassistTool {
         String declaringClassName = behavior.getDeclaringClass().getName();
 
         switch (declaringClassName) {
-            case ImageProcessingHandlerDeclaringClass:
-                handleImageProcessingHandler(behavior);
-                break;
             case BlurImageHandlerDeclaringClass:
                 handleBlurImageHandler(behavior);
                 break;
@@ -107,5 +99,20 @@ public class GetClassAttributes extends AbstractJavassistTool {
     @Override
     protected void transform(CtClass clazz) throws Exception {
         super.transform(clazz);
+    }
+
+    @Override
+    protected void transform(BasicBlock block) throws CannotCompileException {
+        super.transform(block);
+        CtBehavior behavior = block.behavior;
+        String declaringClassName = behavior.getDeclaringClass().getName();
+        String methodName = behavior.getName();
+
+        if (declaringClassName.equals(BlurImageHandlerDeclaringClass) && methodName.equals(ProcessMethodName)) {
+            // Update ram usage for the blur image handler using the
+            // MetricsContext.updateMaxRamUsage method
+            block.behavior.insertAt(block.line,
+                    "pt.ulisboa.tecnico.cnv.webserver.MetricsContext.updateMaxRamUsage(pt.ulisboa.tecnico.cnv.javassist.tools.GetClassAttributes.getCurrentRAMUsage());");
+        }
     }
 }
