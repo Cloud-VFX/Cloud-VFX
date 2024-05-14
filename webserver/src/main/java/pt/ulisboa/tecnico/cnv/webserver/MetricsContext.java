@@ -30,39 +30,17 @@ public class MetricsContext {
     }
 
     /**
-     * Set the maximum ram usage of the request
-     * 
-     * @param maxRamUsage
+     * Set the start processing time of the request
      */
-    public static void setMaxRamUsage(double maxRamUsage) {
-        metrics.get().setMaxRamUsage(maxRamUsage);
+    public static void setStartProcessingTime() {
+        metrics.get().setStartProcessingTime();
     }
 
     /**
-     * Update the maximum ram usage of the request
-     * 
-     * @param maxRamUsage
+     * Set the end processing time of the request
      */
-    public static void updateMaxRamUsage(double maxRamUsage) {
-        metrics.get().updateMaxRamUsage(maxRamUsage);
-    }
-
-    /**
-     * Set the maximum cpu usage of the request
-     * 
-     * @param maxCpuUsage
-     */
-    public static void setMaxCpuUsage(double maxCpuUsage) {
-        metrics.get().setMaxCpuUsage(maxCpuUsage);
-    }
-
-    /**
-     * Update the maximum cpu usage of the request
-     * 
-     * @param maxCpuUsage
-     */
-    public static void updateMaxCpuUsage(double maxCpuUsage) {
-        metrics.get().updateMaxCpuUsage(maxCpuUsage);
+    public static void setEndProcessingTime() {
+        metrics.get().setEndProcessingTime();
     }
 
     /**

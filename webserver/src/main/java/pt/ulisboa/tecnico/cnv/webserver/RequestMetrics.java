@@ -15,8 +15,6 @@ public class RequestMetrics {
     private long endProcessingTime;
     private long processingTime;
     private int imageSize;
-    private double maxRamUsage;
-    private double maxCpuUsage;
     private MetricType metricType;
 
     /**
@@ -67,46 +65,6 @@ public class RequestMetrics {
     }
 
     /**
-     * Set the maximum ram usage of the request
-     * 
-     * @param maxRamUsage
-     */
-    public void setMaxRamUsage(double maxRamUsage) {
-        this.maxRamUsage = maxRamUsage;
-    }
-
-    /**
-     * Update the maximum ram usage of the request
-     * 
-     * @param maxRamUsage
-     */
-    public synchronized void updateMaxRamUsage(double maxRamUsage) {
-        if (maxRamUsage > this.maxRamUsage) {
-            this.maxRamUsage = maxRamUsage;
-        }
-    }
-
-    /**
-     * Set the maximum cpu usage of the request
-     * 
-     * @param maxCpuUsage
-     */
-    public void setMaxCpuUsage(double maxCpuUsage) {
-        this.maxCpuUsage = maxCpuUsage;
-    }
-
-    /**
-     * Update the maximum cpu usage of the request
-     * 
-     * @param maxCpuUsage
-     */
-    public synchronized void updateMaxCpuUsage(double maxCpuUsage) {
-        if (maxCpuUsage > this.maxCpuUsage) {
-            this.maxCpuUsage = maxCpuUsage;
-        }
-    }
-
-    /**
      * Get the start time of the request
      * 
      * @return long
@@ -143,30 +101,21 @@ public class RequestMetrics {
     }
 
     /**
+     * Get the processing time of the request
+     * 
+     * @return long
+     */
+    public long getProcessingTime() {
+        return this.processingTime;
+    }
+
+    /**
      * Get the image size of the request
      * 
      * @return int
      */
     public int getImageSize() {
         return this.imageSize;
-    }
-
-    /**
-     * Get the maximum ram usage of the request
-     * 
-     * @return int
-     */
-    public double getMaxRamUsage() {
-        return this.maxRamUsage;
-    }
-
-    /**
-     * Get the maximum cpu usage of the request
-     * 
-     * @return int
-     */
-    public double getMaxCpuUsage() {
-        return this.maxCpuUsage;
     }
 
     /**
