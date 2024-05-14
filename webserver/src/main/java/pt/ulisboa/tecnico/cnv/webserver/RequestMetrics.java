@@ -1,5 +1,7 @@
 package pt.ulisboa.tecnico.cnv.webserver;
 
+import org.json.JSONObject;
+
 public class RequestMetrics {
     public static enum MetricType {
         BLUR,
@@ -9,6 +11,9 @@ public class RequestMetrics {
 
     private long startTime;
     private long endTime;
+    private long startProcessingTime;
+    private long endProcessingTime;
+    private long processingTime;
     private int imageSize;
     private double maxRamUsage;
     private double maxCpuUsage;
@@ -26,6 +31,21 @@ public class RequestMetrics {
      */
     public void setEndTime() {
         this.endTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Set the start processing time of the request
+     */
+    public void setStartProcessingTime() {
+        this.startProcessingTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Set the end processing time of the request
+     */
+    public void setEndProcessingTime() {
+        this.endProcessingTime = System.currentTimeMillis();
+        this.processingTime = this.endProcessingTime - this.startProcessingTime;
     }
 
     /**
@@ -105,6 +125,24 @@ public class RequestMetrics {
     }
 
     /**
+     * Get the start processing time of the request
+     * 
+     * @return long
+     */
+    public long getStartProcessingTime() {
+        return this.startProcessingTime;
+    }
+
+    /**
+     * Get the end processing time of the request
+     * 
+     * @return long
+     */
+    public long getEndProcessingTime() {
+        return this.endProcessingTime;
+    }
+
+    /**
      * Get the image size of the request
      * 
      * @return int
@@ -152,13 +190,19 @@ public class RequestMetrics {
     /**
      * Get the request metrics in JSON format
      * 
+     * @return JSONObject
+     */
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject(this);
+        return json;
+    }
+
+    /**
+     * Get the request metrics in string format
+     * 
      * @return String
      */
-    public String toJSON() {
-        return "{" + "\"startTime\":" + this.startTime + "," + "\"endTime\":" + this.endTime + "," + "\"imageSize\":"
-                + this.imageSize + "," + "\"maxRamUsage\":" + this.maxRamUsage + "," + "\"maxCpuUsage\":"
-                + this.maxCpuUsage + "," + "\"metricType\":\"" + this.metricType + "\"" + "," + "\"durationInMs\":"
-                + this.getDurationInMs()
-                + "}";
+    public String toString() {
+        return this.toJSON().toString();
     }
 }
