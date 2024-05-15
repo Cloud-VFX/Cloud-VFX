@@ -119,7 +119,12 @@ public class GetClassAttributes extends AbstractJavassistTool {
         String declaringClassName = behavior.getDeclaringClass().getName();
         String methodName = behavior.getName();
 
-        if (declaringClassName.equals(BlurImageHandlerDeclaringClass) && methodName.equals(ProcessMethodName)) {
+        if ((declaringClassName.equals(BlurImageHandlerDeclaringClass)
+                || declaringClassName.equals(EnhanceImageHandlerDeclaringClass))
+                && methodName.equals(ProcessMethodName)) {
+            int basicLength = block.getLength();
+            behavior.insertAt(block.line,
+                    String.format("%s.updateNumberOfInstructions(%d);", MetricsContextDeclaringClass, basicLength));
         }
     }
 }

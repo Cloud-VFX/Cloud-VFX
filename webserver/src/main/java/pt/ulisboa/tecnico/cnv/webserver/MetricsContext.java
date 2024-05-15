@@ -44,6 +44,24 @@ public class MetricsContext {
     }
 
     /**
+     * Set the number of instructions of the request
+     * 
+     * @param numberOfInstructions
+     */
+    public static void setNumberOfInstructions(int numberOfInstructions) {
+        metrics.get().setNumberOfInstructions(numberOfInstructions);
+    }
+
+    /**
+     * Update the number of instructions of the request
+     * 
+     * @param numberOfInstructions
+     */
+    public static void updateNumberOfInstructions(int numberOfInstructions) {
+        metrics.get().updateNumberOfInstructions(numberOfInstructions);
+    }
+
+    /**
      * Set the metric type of the request
      * 
      * @param metricType
