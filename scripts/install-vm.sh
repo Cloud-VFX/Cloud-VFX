@@ -2,17 +2,42 @@
 
 source config.sh
 
-# Install java.
-cmd="sudo yum update -y; sudo yum install java-11-amazon-corretto.x86_64 -y;"
-ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ec2-user@$(cat instance.dns) $cmd
+# Install Java, Maven, and other dependencies.
+echo "Installing Java, Maven, and other dependencies..."
+cmd="sudo apt update && sudo apt install openjdk-11-jdk make maven unzip -y"
+ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ubuntu@$(cat instance.dns) $cmd
+echo "Java, Maven, and other dependencies installed."
 
-# Install web server.
-scp -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH $DIR/../res/WebServer.java ec2-user@$(cat instance.dns):
+# Zip the project.
+echo "Zipping the project..."
+cd "$DIR"/../
+zip -r $DIR/project.zip imageproc raytracer webserver Makefile pom.xml
+cd $DIR
+echo "Project zipped."
 
-# Build web server.
-cmd="javac WebServer.java"
-ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ec2-user@$(cat instance.dns) $cmd 
+# Transfer the project to the server.
+echo "Transferring the project to the server..."
+scp -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH $DIR/project.zip ubuntu@$(cat instance.dns):
+echo "Project transferred."
 
-# Setup web server to start on instance launch.
-cmd="echo \"java -cp /home/ec2-user WebServer\" | sudo tee -a /etc/rc.local; sudo chmod +x /etc/rc.local"
-ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ec2-user@$(cat instance.dns) $cmd
+# Unzip the project and prepare the environment on the server.
+echo "Unzipping the project and preparing the environment on the server..."
+cmd="unzip project.zip -d /home/ubuntu/; cd /home/ubuntu/; make build"
+ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ubuntu@$(cat instance.dns) $cmd 
+echo "Project unzipped and environment prepared."
+
+# Create a startup script.
+echo "Creating a startup script..."
+startup_script='#!/bin/bash\ncd /home/ubuntu/\nmake webserver'
+echo -e $startup_script | ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ubuntu@$(cat instance.dns) "cat > /home/ubuntu/start-webserver.sh; chmod +x /home/ubuntu/start-webserver.sh"
+echo "Startup script created."
+
+# Setup systemd service for the web server to start on instance launch.
+echo "Setting up systemd service for the web server..."
+systemd_service="[Unit]\nDescription=Java Web Server\n\n[Service]\nType=simple\nExecStart=/bin/bash /home/ubuntu/start-webserver.sh\n\n[Install]\nWantedBy=multi-user.target"
+echo -e $systemd_service | ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ubuntu@$(cat instance.dns) "sudo tee /etc/systemd/system/webserver.service > /dev/null"
+
+# Enable and start the service.
+cmd="sudo systemctl enable webserver.service; sudo systemctl start webserver.service"
+ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ubuntu@$(cat instance.dns) $cmd
+echo "Systemd service for the web server enabled and started."
