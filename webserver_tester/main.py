@@ -13,7 +13,7 @@ import logging
 init(autoreset=True)
 
 RAYTRACER_QUERY_PARAMS = {
-    'scols': 450,
+    'scols': 400,
     'srows': 300,
     'wcols': 400,
     'wrows': 300,
