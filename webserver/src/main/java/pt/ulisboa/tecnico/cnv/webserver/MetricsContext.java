@@ -30,6 +30,15 @@ public class MetricsContext {
     }
 
     /**
+     * Set the number of blocks of the request
+     * 
+     * @param numberOfBlocks
+     */
+    public static void createRaytracerInput(int sInputSize, int wInputSize, boolean antiAlias, boolean textureMap) {
+        metrics.get().createRaytracerInput(sInputSize, wInputSize, antiAlias, textureMap);
+    }
+
+    /**
      * Set the start processing time of the request
      */
     public static void setStartProcessingTime() {

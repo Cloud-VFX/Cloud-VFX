@@ -22,6 +22,7 @@ public class GenerateMetrics extends AbstractJavassistTool {
     private final String ReadSceneMethodName = "readScene";
     private final String DrawMethodName = "draw";
     private final String HandleMethodName = "handle";
+    private final String InstrumentRaytracerInputMethodName = "instrumentRaytracerInput";
 
     private void setImageSizeAndMetricType(CtBehavior behavior, String metricType) throws Exception {
         // Set the start processing time of the request
@@ -72,6 +73,11 @@ public class GenerateMetrics extends AbstractJavassistTool {
                             RequestMetricsDeclaringClass));
             behavior.insertAfter(
                     String.format("%s.setEndProcessingTime();", MetricsContextDeclaringClass), true);
+        }
+
+        if (methodName.equals(InstrumentRaytracerInputMethodName)) {
+            behavior.insertAfter(
+                    String.format("%s.createRaytracerInput($1, $2, $3, $4);", MetricsContextDeclaringClass), true);
         }
     }
 

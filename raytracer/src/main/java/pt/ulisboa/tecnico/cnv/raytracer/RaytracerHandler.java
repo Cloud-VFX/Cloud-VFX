@@ -48,13 +48,16 @@ public class RaytracerHandler implements HttpHandler, RequestHandler<Map<String,
         int roff = Integer.parseInt(parameters.get("roff"));
         Main.ANTI_ALIAS = Boolean.parseBoolean(parameters.getOrDefault("aa", "false"));
         Main.MULTI_THREAD = Boolean.parseBoolean(parameters.getOrDefault("multi", "false"));
+        boolean hasTextMap = false;
 
         InputStream stream = he.getRequestBody();
-        Map<String, Object> body = mapper.readValue(stream, new TypeReference<>() {});
+        Map<String, Object> body = mapper.readValue(stream, new TypeReference<>() {
+        });
 
         byte[] input = ((String) body.get("scene")).getBytes();
         byte[] texmap = null;
         if (body.containsKey("texmap")) {
+            hasTextMap = true;
             // Convert ArrayList<Integer> to byte[]
             ArrayList<Integer> texmapBytes = (ArrayList<Integer>) body.get("texmap");
             texmap = new byte[texmapBytes.size()];
@@ -62,6 +65,8 @@ public class RaytracerHandler implements HttpHandler, RequestHandler<Map<String,
                 texmap[i] = texmapBytes.get(i).byteValue();
             }
         }
+
+        instrumentRaytracerInput(scols * srows, wcols * wrows, Main.ANTI_ALIAS, hasTextMap);
 
         byte[] result = handleRequest(input, texmap, scols, srows, wcols, wrows, coff, roff);
         String response = String.format("data:image/bmp;base64,%s", Base64.getEncoder().encodeToString(result));
@@ -88,7 +93,8 @@ public class RaytracerHandler implements HttpHandler, RequestHandler<Map<String,
         return result;
     }
 
-    private byte[] handleRequest(byte[] input, byte[] texmap, int scols, int srows, int wcols, int wrows, int coff, int roff) {
+    private byte[] handleRequest(byte[] input, byte[] texmap, int scols, int srows, int wcols, int wrows, int coff,
+            int roff) {
         try {
             RayTracer rayTracer = new RayTracer(scols, srows, wcols, wrows, coff, roff);
             rayTracer.readScene(input, texmap);
@@ -102,8 +108,27 @@ public class RaytracerHandler implements HttpHandler, RequestHandler<Map<String,
         }
     }
 
+    /*
+     * Instrumentation code
+     * 
+     * @param sInputSize
+     * the size of the scene input
+     * 
+     * @param wInputSize
+     * the size of the world input
+     * 
+     * @param antiAlias
+     * if the anti alias is enabled
+     * 
+     * @param textureMap
+     * if the texture map is enabled
+     */
+    public static void instrumentRaytracerInput(int sInputSize, int wInputSize, boolean antiAlias, boolean textureMap) {
+        return;
+    }
+
     @Override
-    public String handleRequest(Map<String,String> event, Context context) {
+    public String handleRequest(Map<String, String> event, Context context) {
         Main.ANTI_ALIAS = Boolean.parseBoolean(event.getOrDefault("aa", "false"));
         Main.MULTI_THREAD = Boolean.parseBoolean(event.getOrDefault("multi", "false"));
         int scols = Integer.parseInt(event.get("scols"));

@@ -9,6 +9,10 @@ public class RequestMetrics {
         RAYTRACER
     }
 
+    private int sInputSize;
+    private int wInputSize;
+    private boolean antiAlias;
+    private boolean textureMap;
     private long startTime;
     private long endTime;
     private long startProcessingTime;
@@ -48,6 +52,13 @@ public class RequestMetrics {
     public void setEndProcessingTime() {
         this.endProcessingTime = System.currentTimeMillis();
         this.processingTime = this.endProcessingTime - this.startProcessingTime;
+    }
+
+    public void createRaytracerInput(int sInputSize, int wInputSize, boolean antiAlias, boolean textureMap) {
+        this.sInputSize = sInputSize;
+        this.wInputSize = wInputSize;
+        this.antiAlias = antiAlias;
+        this.textureMap = textureMap;
     }
 
     /**
@@ -175,6 +186,42 @@ public class RequestMetrics {
      */
     public MetricType getMetricType() {
         return this.metricType;
+    }
+
+    /**
+     * Get the scene input size of the request
+     * 
+     * @return int
+     */
+    public int getSInputSize() {
+        return this.sInputSize;
+    }
+
+    /**
+     * Get the world input size of the request
+     * 
+     * @return int
+     */
+    public int getWInputSize() {
+        return this.wInputSize;
+    }
+
+    /**
+     * Get the anti alias of the request
+     * 
+     * @return boolean
+     */
+    public boolean getAntiAlias() {
+        return this.antiAlias;
+    }
+
+    /**
+     * Get the texture map of the request
+     * 
+     * @return boolean
+     */
+    public boolean getTextureMap() {
+        return this.textureMap;
     }
 
     /**
