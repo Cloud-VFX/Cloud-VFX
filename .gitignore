@@ -2,3 +2,7 @@ target
 webserver_tester/output_sessions
 __pycache__
 .env
+*.class
+*.txt
+*.log
+*.json
