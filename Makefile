@@ -14,9 +14,17 @@ imageproc-blur:
 	@echo "Building and running Image Processing (Blur)..."
 	$(MAKE) run PROJECT=imageproc CLASS=pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler INPUT_FILE=$(INPUT_FILE) OUTPUT_FILE=$(OUTPUT_FILE) ARGS=""
 
+imageproc-blur-javassist:
+	@echo "Building and running Image Processing (Blur) with Javassist..."
+	$(MAKE) run-javassist PROJECT=imageproc CLASS=pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler JAVASSIST_TOOL=$(JAVASSIST_TOOL) ARGS=""
+
 imageproc-enhance:
 	@echo "Building and running Image Processing (Enhance)..."
 	$(MAKE) run PROJECT=imageproc CLASS=pt.ulisboa.tecnico.cnv.imageproc.EnhanceImageHandler INPUT_FILE=$(INPUT_FILE) OUTPUT_FILE=$(OUTPUT_FILE) ARGS=""
+
+imageproc-enhance-javassist:
+	@echo "Building and running Image Processing (Enhance) with Javassist..."
+	$(MAKE) run-javassist PROJECT=imageproc CLASS=pt.ulisboa.tecnico.cnv.imageproc.EnhanceImageHandler JAVASSIST_TOOL=$(JAVASSIST_TOOL) ARGS=""
 
 webserver:
 	@echo "Building and running Web Server..."
