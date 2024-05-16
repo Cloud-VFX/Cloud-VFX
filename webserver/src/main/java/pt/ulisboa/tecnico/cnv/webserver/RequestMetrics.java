@@ -15,6 +15,7 @@ public class RequestMetrics {
     private long endProcessingTime;
     private long processingTime;
     private int numberOfInstructions;
+    private int numberOfBlocks;
     private int imageSize;
     private MetricType metricType;
 
@@ -24,6 +25,7 @@ public class RequestMetrics {
     public RequestMetrics() {
         this.startTime = System.currentTimeMillis();
         this.numberOfInstructions = 0;
+        this.numberOfBlocks = 0;
     }
 
     /**
@@ -64,6 +66,7 @@ public class RequestMetrics {
      */
     public void updateNumberOfInstructions(int numberOfInstructions) {
         this.numberOfInstructions += numberOfInstructions;
+        this.numberOfBlocks++;
     }
 
     /**
@@ -136,6 +139,15 @@ public class RequestMetrics {
      */
     public int getNumberOfInstructions() {
         return this.numberOfInstructions;
+    }
+
+    /**
+     * Get the number of blocks of the request
+     * 
+     * @return int
+     */
+    public int getNumberOfBlocks() {
+        return this.numberOfBlocks;
     }
 
     /**

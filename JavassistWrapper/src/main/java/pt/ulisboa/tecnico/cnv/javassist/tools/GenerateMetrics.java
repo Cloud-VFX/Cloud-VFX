@@ -3,14 +3,15 @@ package pt.ulisboa.tecnico.cnv.javassist.tools;
 import javassist.*;
 import java.util.*;
 
-public class GetClassAttributes extends AbstractJavassistTool {
+public class GenerateMetrics extends AbstractJavassistTool {
 
-    public GetClassAttributes(List<String> packageNameList, String writeDestination) {
+    public GenerateMetrics(List<String> packageNameList, String writeDestination) {
         super(packageNameList, writeDestination);
     }
 
     private final String MetricsContextDeclaringClass = "pt.ulisboa.tecnico.cnv.webserver.MetricsContext";
     private final String RequestMetricsDeclaringClass = "pt.ulisboa.tecnico.cnv.webserver.RequestMetrics";
+    private final String MetricsMiddlewareDeclaringClass = "pt.ulisboa.tecnico.cnv.webserver.MetricsMiddleware";
 
     private final String BlurImageHandlerDeclaringClass = "pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler";
     private final String EnhanceImageHandlerDeclaringClass = "pt.ulisboa.tecnico.cnv.imageproc.EnhanceImageHandler";
@@ -18,23 +19,9 @@ public class GetClassAttributes extends AbstractJavassistTool {
 
     private final String HandleRequestMethodName = "handleRequest";
     private final String ProcessMethodName = "process";
-
-    public static double getCurrentRAMUsage() {
-        long currentMemoryUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        return (double) currentMemoryUsed / (1024 * 1024); // Convert to MB
-    }
-
-    /**
-     * Need to define the correct method signature for the raytracer
-     * Good candidates:
-     * ```
-     * RayTracer rayTracer = new RayTracer(scols, srows, wcols, wrows, coff, roff);
-     * rayTracer.readScene(input, texmap);
-     * BufferedImage image = rayTracer.draw();
-     * ```
-     * Then when some of these methods are called we insert the metrics logic for
-     * the ray tracer
-     */
+    private final String ReadSceneMethodName = "readScene";
+    private final String DrawMethodName = "draw";
+    private final String HandleMethodName = "handle";
 
     private void setImageSizeAndMetricType(CtBehavior behavior, String metricType) throws Exception {
         // Set the start processing time of the request
@@ -62,7 +49,6 @@ public class GetClassAttributes extends AbstractJavassistTool {
         if (methodName.equals(ProcessMethodName)) {
             setImageSizeAndMetricType(behavior, "BLUR");
         }
-        // Add other methods here for the BlurImageHandler
     }
 
     private void handleEnhanceImageHandler(CtBehavior behavior) throws Exception {
@@ -72,8 +58,6 @@ public class GetClassAttributes extends AbstractJavassistTool {
         if (methodName.equals(ProcessMethodName)) {
             setImageSizeAndMetricType(behavior, "ENHANCE");
         }
-
-        // Add other methods here for the EnhanceImageHandler
     }
 
     private void handleRaytracerHandler(CtBehavior behavior) throws Exception {
@@ -81,10 +65,14 @@ public class GetClassAttributes extends AbstractJavassistTool {
 
         // Will handle the `handleRequest` method
         if (methodName.equals(HandleRequestMethodName)) {
-            System.out.println("Handling RaytracerHandler handleRequest method");
+            behavior.insertBefore(
+                    String.format("%s.setStartProcessingTime();", MetricsContextDeclaringClass));
+            behavior.insertBefore(
+                    String.format("%s.setMetricType(%s.MetricType.RAYTRACER);", MetricsContextDeclaringClass,
+                            RequestMetricsDeclaringClass));
+            behavior.insertAfter(
+                    String.format("%s.setEndProcessingTime();", MetricsContextDeclaringClass), true);
         }
-
-        // Add other methods here for the RaytracerHandler
     }
 
     @Override
@@ -112,6 +100,12 @@ public class GetClassAttributes extends AbstractJavassistTool {
         super.transform(clazz);
     }
 
+    private boolean checkAllMethodsNames(String methodName) {
+        return methodName.equals(HandleRequestMethodName) || methodName.equals(ProcessMethodName)
+                || methodName.equals(HandleMethodName) || methodName.equals(ReadSceneMethodName)
+                || methodName.equals(DrawMethodName) || methodName.equals("read");
+    }
+
     @Override
     protected void transform(BasicBlock block) throws CannotCompileException {
         super.transform(block);
@@ -119,12 +113,13 @@ public class GetClassAttributes extends AbstractJavassistTool {
         String declaringClassName = behavior.getDeclaringClass().getName();
         String methodName = behavior.getName();
 
-        if ((declaringClassName.equals(BlurImageHandlerDeclaringClass)
-                || declaringClassName.equals(EnhanceImageHandlerDeclaringClass))
-                && methodName.equals(ProcessMethodName)) {
-            int basicLength = block.getLength();
+        if (declaringClassName.equals(MetricsMiddlewareDeclaringClass))
+            return;
+
+        if (checkAllMethodsNames(methodName)) {
             behavior.insertAt(block.line,
-                    String.format("%s.updateNumberOfInstructions(%d);", MetricsContextDeclaringClass, basicLength));
+                    String.format("%s.updateNumberOfInstructions(%d);", MetricsContextDeclaringClass,
+                            block.getLength()));
         }
     }
 }
