@@ -22,32 +22,32 @@ public class ICount extends CodeDumper {
     }
 
     public static void incBasicBlock(int position, int length) {
-        long threadId = Thread.currentThread().threadId();
-        metricsMap.computeIfAbsent(threadId, k -> new Metrics()).nblocks++;
-        metricsMap.get(threadId).ninsts += length;
+        long getId = Thread.currentThread().getId();
+        metricsMap.computeIfAbsent(getId, k -> new Metrics()).nblocks++;
+        metricsMap.get(getId).ninsts += length;
     }
 
     public static void incBehavior(String name) {
-        long threadId = Thread.currentThread().threadId();
-        metricsMap.computeIfAbsent(threadId, k -> new Metrics()).nmethods++;
+        long getId = Thread.currentThread().getId();
+        metricsMap.computeIfAbsent(getId, k -> new Metrics()).nmethods++;
     }
 
     public static void printStatistics(String name) {
-        long threadId = Thread.currentThread().threadId();
-        Metrics m = metricsMap.get(threadId);
+        long getId = Thread.currentThread().getId();
+        Metrics m = metricsMap.get(getId);
         if (m != null) {
             System.out.println(String.format("[%s][%s][Thread %d] Number of executed methods: %s",
-                    ICount.class.getSimpleName(), name, threadId, m.nmethods));
+                    ICount.class.getSimpleName(), name, getId, m.nmethods));
             System.out.println(String.format("[%s][%s][Thread %d] Number of executed basic blocks: %s",
-                    ICount.class.getSimpleName(), name, threadId, m.nblocks));
+                    ICount.class.getSimpleName(), name, getId, m.nblocks));
             System.out.println(String.format("[%s][%s][Thread %d] Number of executed instructions: %s",
-                    ICount.class.getSimpleName(), name, threadId, m.ninsts));
+                    ICount.class.getSimpleName(), name, getId, m.ninsts));
         }
     }
 
     public static void clearStatistics() {
-        long threadId = Thread.currentThread().threadId();
-        metricsMap.remove(threadId);
+        long getId = Thread.currentThread().getId();
+        metricsMap.remove(getId);
     }
 
     @Override

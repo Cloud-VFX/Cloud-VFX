@@ -21,37 +21,37 @@ public class CPUMeasurementTracker extends CodeDumper {
     }
 
     public static void startTracking() {
-        long threadId = Thread.currentThread().getId();
-        startTimeMap.put(threadId, threadMXBean.getCurrentThreadCpuTime());
+        long getId = Thread.currentThread().getId();
+        startTimeMap.put(getId, threadMXBean.getCurrentThreadCpuTime());
     }
 
     public static void stopTracking() {
-        long threadId = Thread.currentThread().getId();
+        long getId = Thread.currentThread().getId();
         long endTime = threadMXBean.getCurrentThreadCpuTime();
-        long startTime = startTimeMap.getOrDefault(threadId, endTime);
+        long startTime = startTimeMap.getOrDefault(getId, endTime);
         long duration = endTime - startTime;
 
-        totalCPUTimeMap.compute(threadId, (k, v) -> (v == null) ? duration : v + duration);
-        countMap.compute(threadId, (k, v) -> (v == null) ? 1 : v + 1);
+        totalCPUTimeMap.compute(getId, (k, v) -> (v == null) ? duration : v + duration);
+        countMap.compute(getId, (k, v) -> (v == null) ? 1 : v + 1);
     }
 
     public static void printStatistics() {
-        long threadId = Thread.currentThread().getId();
-        Long totalCpuTime = totalCPUTimeMap.getOrDefault(threadId, 0L);
-        Integer count = countMap.getOrDefault(threadId, 0);
+        long getId = Thread.currentThread().getId();
+        Long totalCpuTime = totalCPUTimeMap.getOrDefault(getId, 0L);
+        Integer count = countMap.getOrDefault(getId, 0);
 
         if (count > 0) {
             double averageCpuTime = totalCpuTime / (double) count;
             System.out.println(String.format("[%s][Thread %d] Average CPU time used: %.2f ns",
-                    CPUMeasurementTracker.class.getSimpleName(), threadId, averageCpuTime));
+                    CPUMeasurementTracker.class.getSimpleName(), getId, averageCpuTime));
         }
     }
 
     public static void clearStatistics() {
-        long threadId = Thread.currentThread().getId();
-        totalCPUTimeMap.remove(threadId);
-        countMap.remove(threadId);
-        startTimeMap.remove(threadId);
+        long getId = Thread.currentThread().getId();
+        totalCPUTimeMap.remove(getId);
+        countMap.remove(getId);
+        startTimeMap.remove(getId);
     }
 
     @Override
