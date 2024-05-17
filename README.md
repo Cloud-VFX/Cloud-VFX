@@ -1,4 +1,4 @@
-## SpecialVFX@Cloud
+## SpecialVFX@Cloud - G02
 
 This project contains five sub-projects:
 
