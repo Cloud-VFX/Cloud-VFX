@@ -2,6 +2,8 @@
 
 source config.sh
 
+sleep 2
+
 # Install Java, Maven, and other dependencies.
 echo "Installing Java, Maven, and other dependencies..."
 cmd="sudo apt update && sudo apt install openjdk-11-jdk make maven unzip -y"
