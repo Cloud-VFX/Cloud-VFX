@@ -39,7 +39,9 @@ Then, a EC2 instance will be started and the webserver will be available at
 - 1. Run `./create-image.sh`
 - 2. Run `./launch-deployment.sh`
 
-Then, a Load Balancer (LB) and Auto Scaler group will be started and the webserver will be available at the public ip of the LB. To terminate the Auto Scaler and the Load Balancer:
+Then, a Load Balancer (LB) and Auto Scaler group will be started and the webserver will be available at the public ip of the LB. 
+
+To terminate the Auto Scaler and the Load Balancer:
 - 3. Run `./terminate-deployment.sh`
 
 
