@@ -31,12 +31,14 @@ This is a list of dependencies required to build and run the project:
 - 2. Enter the `scripts` directory
 - 3. Run `./launch-vm.sh`
 - 4. Run `./install-vm.sh`
+
 Then, a EC2 instance will be started and the webserver will be available at
 `http://<public_ip>:8080`. Where `<public_ip>` can be found on `scripts/instance.dns` file.
 
 ### How to create an image with autostart of the webserver
 - 1. Run `./create-image.sh`
 - 2. Run `./launch-deployment.sh`
+
 Then, a Load Balancer (LB) and Auto Scaler group will be started and the webserver will be available at the public ip of the LB. To terminate the Auto Scaler and the Load Balancer:
 - 3. Run `./terminate-deployment.sh`
 
