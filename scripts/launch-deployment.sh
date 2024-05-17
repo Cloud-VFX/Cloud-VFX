@@ -32,3 +32,16 @@ aws autoscaling create-auto-scaling-group \
 	--min-size 1 \
 	--max-size 3 \
 	--desired-capacity 2
+
+# Create target tracking scaling policy to maintain average CPU load at 50%.
+aws autoscaling put-scaling-policy \
+    --auto-scaling-group-name CNV-AutoScalingGroup \
+    --policy-name TargetTrackingPolicy \
+    --policy-type TargetTrackingScaling \
+    --target-tracking-configuration '{
+        "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+        },
+        "TargetValue": 50.0,
+        "DisableScaleIn": false
+    }'
