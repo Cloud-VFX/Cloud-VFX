@@ -11,7 +11,7 @@ echo "Java, Maven, and other dependencies installed."
 # Zip the project.
 echo "Zipping the project..."
 cd "$DIR"/../
-zip -r $DIR/project.zip imageproc raytracer webserver Makefile pom.xml
+zip -r $DIR/project.zip imageproc raytracer JavassistWrapper webserver Makefile pom.xml
 cd $DIR
 echo "Project zipped."
 
@@ -28,7 +28,7 @@ echo "Project unzipped and environment prepared."
 
 # Create a startup script.
 echo "Creating a startup script..."
-startup_script='#!/bin/bash\ncd /home/ubuntu/\nmake webserver'
+startup_script='#!/bin/bash\ncd /home/ubuntu/\nmake webserver-javassist JAVASSIST_TOOL=GenerateMetrics'
 echo -e $startup_script | ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ubuntu@$(cat instance.dns) "cat > /home/ubuntu/start-webserver.sh; chmod +x /home/ubuntu/start-webserver.sh"
 echo "Startup script created."
 
