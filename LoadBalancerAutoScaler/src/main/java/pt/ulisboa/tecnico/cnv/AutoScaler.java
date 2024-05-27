@@ -124,7 +124,7 @@ public class AutoScaler {
                 .withNamespace("AWS/EC2")
                 .withMetricName("CPUUtilization")
                 .withDimensions(new Dimension().withName("InstanceId").withValue(instanceId))
-                .withStartTime(new Date(System.currentTimeMillis() - 300000)) // 2 minutes ago
+                .withStartTime(new Date(System.currentTimeMillis() - 300000)) // 5 minutes ago
                 .withEndTime(new Date())
                 .withPeriod(60)
                 .withStatistics(Statistic.Average);
