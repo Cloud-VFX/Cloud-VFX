@@ -6,10 +6,16 @@
     <artifactId>LoadBalancerAutoScaler</artifactId>
     <version>1.0-SNAPSHOT</version>
     <dependencies>
-        <!-- AWS SDK for Java -->
+        <!-- AWS SDK for EC2 -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ec2</artifactId>
+            <version>1.11.1000</version>
+        </dependency>
+        <!-- AWS SDK for CloudWatch -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-cloudwatch</artifactId>
             <version>1.11.1000</version>
         </dependency>
         <!-- Logging framework (SLF4J with Logback) -->
@@ -23,6 +29,12 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>java-dotenv</artifactId>
+            <version>5.2.2</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -36,11 +48,11 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <mainClass>pt.ulisboa.tecnico.cnv.App</mainClass>
                 </configuration>
             </plugin>
         </plugins>
