@@ -5,11 +5,14 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchClientBuilder;
-import com.amazonaws.services.cloudwatch.model.*;
+import com.amazonaws.services.cloudwatch.model.Datapoint;
+import com.amazonaws.services.cloudwatch.model.Dimension;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
+import com.amazonaws.services.cloudwatch.model.Statistic;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.*;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -42,7 +45,9 @@ public class AutoScaler {
         this.keyName = keyName;
         this.securityGroup = securityGroup;
 
+        // Raise first instance
         scaleUp();
+
         // Schedule the CPU usage logging task
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(this::logAverageCPUUsage, 0, 60, TimeUnit.SECONDS);
@@ -61,15 +66,61 @@ public class AutoScaler {
         RunInstancesResult result = ec2.runInstances(runInstancesRequest);
         Instance instance = result.getReservation().getInstances().get(0);
         String instanceId = instance.getInstanceId();
-        String instanceAddress = instance.getPublicDnsName();
+        String instanceAddress = waitForDNS(instanceId);
 
         // Register the new instance in the shared registry
         SharedInstanceRegistry.addInstance(instanceId, new ServerInstance(instanceId, instanceAddress));
         instanceIds.add(instanceId);
 
-        System.out.println("Instance launched: " + instanceId);
+        // for (ServerInstance instance_mapped : SharedInstanceRegistry.getInstances()) {
+        //     System.out.println(instance_mapped.getAddress());
+        // }
+
+        System.out.println("Instance launched: " + instanceId + " with DNS: " + instanceAddress);
     }
 
+    private String getDNS(String instanceId) {
+        try {
+            DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(instanceId);
+            DescribeInstancesResult result = ec2.describeInstances(request);
+
+            for (Reservation reservation : result.getReservations()) {
+                for (Instance instance : reservation.getInstances()) {
+                    if (instance.getInstanceId().equals(instanceId)) {
+                        return instance.getPublicDnsName();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error retrieving DNS for instance " + instanceId + ": " + e.getMessage());
+        }
+        return null;
+    }
+    
+    private String waitForDNS(String instanceId) {
+        final int maxRetries = 10;
+        final long sleepInterval = 1; // 1 second
+    
+        for (int i = 0; i < maxRetries; i++) {
+            String dnsName = getDNS(instanceId);
+            if (dnsName != null && !dnsName.isEmpty()) {
+                return dnsName;
+            }
+    
+            try {
+                System.out.println("Waiting for DNS to be available for instance: " + instanceId);
+                Thread.sleep(sleepInterval);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.err.println("Thread was interrupted while waiting for DNS.");
+                return null;
+            }
+        }
+    
+        System.err.println("DNS not available for instance " + instanceId + " after " + maxRetries + " retries.");
+        return null;
+    }
+    
     public void scaleDown() {
         List<Instance> instances = getRunningInstances();
 

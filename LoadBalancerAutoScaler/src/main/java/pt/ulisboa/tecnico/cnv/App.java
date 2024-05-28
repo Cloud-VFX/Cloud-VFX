@@ -7,8 +7,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        //LoadBalancer loadBalancer = new LoadBalancer();
-        //loadBalancer.start(8080);
+
         Dotenv dotenv = Dotenv.load();
 
         String keyName = dotenv.get("AWS_KEY_NAME");
@@ -18,11 +17,16 @@ public class App {
         String amiId = "ami-0414abd23b09a9c44";
         String instanceType = "t3.micro";
         
+        System.out.println("Testing env variables, accessKey: " + accessKey);
         
-        System.out.println("Testing env variables, accessKey:" + accessKey);
+        // Initialize AutoScaler
         AutoScaler autoScaler = new AutoScaler(accessKey, secretKey, amiId, instanceType, keyName, securityGroup);
+        
+        // Initialize and start the LoadBalancer
+        LoadBalancer loadBalancer = new LoadBalancer(); // Assuming LoadBalancer does not require any arguments
+        int loadBalancerPort = 8080; // Choose an appropriate port for the load balancer
+        loadBalancer.start(loadBalancerPort); // Start the load balancer
 
-        // Periodically check and scale
-        // This can be done using a scheduled executor or similar mechanism
+        System.out.println("LoadBalancer is running on port " + loadBalancerPort);
     }
 }
