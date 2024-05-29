@@ -8,6 +8,8 @@ import pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler;
 import pt.ulisboa.tecnico.cnv.imageproc.EnhanceImageHandler;
 import pt.ulisboa.tecnico.cnv.raytracer.RaytracerHandler;
 
+import pt.ulisboa.tecnico.cnv.metrics.DynamoDBClient;
+
 public class WebServer {
 
     public static final String METRICS_FILE = "metrics.log";
@@ -25,10 +27,14 @@ public class WebServer {
     public static void main(String[] args) throws Exception {
         System.out.println("Starting WebServer...");
         createMetricsFile();
+
+        // Setup DynamoDB table
+        DynamoDBClient.setupTable();
+
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
 
-        server.createContext("/", new MetricsMiddleware(new RootHandler()));
+        server.createContext("/", new RootHandler());
         server.createContext("/raytracer", new MetricsMiddleware(new RaytracerHandler()));
         server.createContext("/blurimage", new MetricsMiddleware(new BlurImageHandler()));
         server.createContext("/enhanceimage", new MetricsMiddleware(new EnhanceImageHandler()));
