@@ -2,13 +2,23 @@ package pt.ulisboa.tecnico.cnv.webserver;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import com.sun.net.httpserver.HttpServer;
 
 import pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler;
 import pt.ulisboa.tecnico.cnv.imageproc.EnhanceImageHandler;
 import pt.ulisboa.tecnico.cnv.raytracer.RaytracerHandler;
-
+import pt.ulisboa.tecnico.cnv.metrics.AggregatedMetricsClient;
 import pt.ulisboa.tecnico.cnv.metrics.DynamoDBClient;
+import pt.ulisboa.tecnico.cnv.metrics.MetricsAggregator;
+
+import com.amazonaws.services.lambda.runtime.ClientContext;
+import com.amazonaws.services.lambda.runtime.CognitoIdentity;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
 public class WebServer {
 
@@ -30,6 +40,7 @@ public class WebServer {
 
         // Setup DynamoDB table
         DynamoDBClient.setupTable();
+        AggregatedMetricsClient.setupTable();
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
@@ -41,5 +52,85 @@ public class WebServer {
 
         System.out.println("WebServer started on port 8000");
         server.start();
+
+        // Scheduled periodic aggregation of metrics
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        MetricsAggregator aggregator = new MetricsAggregator();
+        scheduler.scheduleAtFixedRate(() -> handleAggregation(aggregator), 10, 30, TimeUnit.SECONDS);
+
     }
+
+    private static void handleAggregation(MetricsAggregator aggregator) {
+        try {
+            aggregator.handleRequest(null, new Context() {
+                @Override
+                public String getAwsRequestId() {
+                    return "localRequestId";
+                }
+
+                @Override
+                public String getLogGroupName() {
+                    return "localLogGroup";
+                }
+
+                @Override
+                public String getLogStreamName() {
+                    return "localLogStream";
+                }
+
+                @Override
+                public String getFunctionName() {
+                    return "localFunction";
+                }
+
+                @Override
+                public String getFunctionVersion() {
+                    return "1.0";
+                }
+
+                @Override
+                public String getInvokedFunctionArn() {
+                    return "localArn";
+                }
+
+                @Override
+                public CognitoIdentity getIdentity() {
+                    return null;
+                }
+
+                @Override
+                public ClientContext getClientContext() {
+                    return null;
+                }
+
+                @Override
+                public int getRemainingTimeInMillis() {
+                    return 10000;
+                }
+
+                @Override
+                public int getMemoryLimitInMB() {
+                    return 512;
+                }
+
+                @Override
+                public LambdaLogger getLogger() {
+                    return new LambdaLogger() {
+                        @Override
+                        public void log(String message) {
+                            System.out.println(message);
+                        }
+
+                        @Override
+                        public void log(byte[] message) {
+                            System.out.println(new String(message));
+                        }
+                    };
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

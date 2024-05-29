@@ -9,11 +9,15 @@ import com.amazonaws.services.dynamodbv2.model.*;
 public class DynamoDBClient {
         public static final String TABLE_NAME = "RequestMetrics";
         public static final String GSI_NAME = "MetricTypeIndex";
-        private static final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+        public static final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                         .withRegion("eu-north-1")
                         .build();
 
         public static final DynamoDB dynamoDB = new DynamoDB(client);
+
+        public AmazonDynamoDB getClient() {
+                return client;
+        }
 
         /**
          * Setup the DynamoDB table
