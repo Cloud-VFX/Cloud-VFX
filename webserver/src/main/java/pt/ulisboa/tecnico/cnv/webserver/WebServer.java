@@ -11,6 +11,7 @@ import com.sun.net.httpserver.HttpServer;
 import pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler;
 import pt.ulisboa.tecnico.cnv.imageproc.EnhanceImageHandler;
 import pt.ulisboa.tecnico.cnv.raytracer.RaytracerHandler;
+import pt.ulisboa.tecnico.cnv.metrics.AggregatedDAO;
 import pt.ulisboa.tecnico.cnv.metrics.AggregatedMetricsClient;
 import pt.ulisboa.tecnico.cnv.metrics.DynamoDBClient;
 import pt.ulisboa.tecnico.cnv.metrics.MetricsAggregator;
@@ -55,6 +56,27 @@ public class WebServer {
             handleAggregation(new MetricsAggregator());
             exchange.sendResponseHeaders(200, 0);
             exchange.close();
+        }));
+
+        /**
+         * Endpoint to query the latest aggregated metrics for a specific metric type
+         * Usage: /query_aggregated?metricType=METRIC_TYPE
+         */
+        server.createContext("/query_aggregated", (exchange -> {
+            String query = exchange.getRequestURI().getQuery();
+            String[] params = query.split("=");
+            if (params.length != 2) {
+                exchange.sendResponseHeaders(400, 0);
+                exchange.close();
+                return;
+            }
+            String metricType = params[1];
+            AggregatedDAO dao = new AggregatedDAO();
+            String response = dao.readLatestAggregatedMetrics(metricType).toString();
+            exchange.sendResponseHeaders(200, response.length());
+            exchange.getResponseBody().write(response.getBytes());
+            exchange.close();
+
         }));
 
         server.start();

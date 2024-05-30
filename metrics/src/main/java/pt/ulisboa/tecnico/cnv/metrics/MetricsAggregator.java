@@ -80,20 +80,20 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
                 continue;
             }
 
-            // Store aggregated result
-            long timestamp = System.currentTimeMillis();
-            JSONObject coeffsJson = new JSONObject();
-            coeffsJson.put("Alpha", coefficients.alpha);
-            coeffsJson.put("Beta", coefficients.beta);
-            coeffsJson.put("Function", coefficients.function);
-            coeffsJson.put("MaxInput", globalMaxInput);
-            coeffsJson.put("MinInput", globalMinInput);
-            coeffsJson.put("MaxOutput", globalMaxOutput);
-            coeffsJson.put("MinOutput", globalMinOutput);
+            // Create AggregatedMetrics object
+            AggregatedMetrics aggregatedMetrics = new AggregatedMetrics(
+                    coefficients.alpha,
+                    coefficients.beta,
+                    (long) globalMaxInput,
+                    (long) globalMinInput,
+                    (long) globalMaxOutput,
+                    (long) globalMinOutput,
+                    coefficients.function,
+                    metricType,
+                    System.currentTimeMillis());
 
-            Item aggregatedItem = new Item()
-                    .withPrimaryKey("MetricType", metricType, "Timestamp", String.valueOf(timestamp))
-                    .withString("Coefficients", coeffsJson.toString());
+            // Store aggregated metrics
+            Item aggregatedItem = aggregatedMetrics.toItem();
 
             aggregatedMetricsTable.putItem(aggregatedItem);
         }
