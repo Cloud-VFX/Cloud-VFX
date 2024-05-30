@@ -20,7 +20,9 @@ public class App {
         System.out.println("Testing env variables, accessKey: " + accessKey);
         
         AutoScaler autoScaler = new AutoScaler(accessKey, secretKey, amiId, instanceType, keyName, securityGroup);
-        
+        autoScaler.scaleUp();
+        autoScaler.scaleUp();
+
         LoadBalancer loadBalancer = new LoadBalancer();
         int loadBalancerPort = 8080;
         loadBalancer.start(loadBalancerPort);
