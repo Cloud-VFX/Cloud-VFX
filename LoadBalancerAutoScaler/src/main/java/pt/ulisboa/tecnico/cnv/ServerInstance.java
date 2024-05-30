@@ -3,7 +3,9 @@ package pt.ulisboa.tecnico.cnv;
 public class ServerInstance {
     private String instanceId;
     private String address;
+    private int numRunningRequests;
     private float totalComplexity; // TODO: what data type should we use here?
+    private boolean markedForTermination;
 
     /** 
      * Constructor for ServerInstance with instance ID and address initialization.
@@ -11,7 +13,9 @@ public class ServerInstance {
     public ServerInstance(String instanceId, String address) {
         this.instanceId = instanceId;
         this.address = address;
-        this.totalComplexity = 0.0f; 
+        this.totalComplexity = 0.0f;
+        this.numRunningRequests = 0;
+        this.markedForTermination = false;
     }
 
     // Getters for instance ID and address
@@ -23,6 +27,25 @@ public class ServerInstance {
         return address;
     }
 
+    public boolean isMarkedForTermination(){
+        return markedForTermination;
+    }
+
+    public void markForTermination(){
+        this.markedForTermination = true;
+    }
+
+    public void increaseNumRunningRequests(){
+        this.numRunningRequests += 1;
+    }
+
+    public void decreaseNumRunningRequests(){
+        this.numRunningRequests -= 1;
+    }
+    
+    public int getNumRunningRequests(){
+        return numRunningRequests;
+    }
     /**
      * Adds complexity to the total complexity count.
      * @param complexity amount to add
