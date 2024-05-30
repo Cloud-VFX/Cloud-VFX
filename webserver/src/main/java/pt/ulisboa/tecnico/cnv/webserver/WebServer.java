@@ -27,7 +27,8 @@ public class WebServer {
 
     private static void startCpuUsagePublisher() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(CpuUsagePublisher::publishCpuUsage, 0, 10, TimeUnit.SECONDS);
+        CpuUsagePublisher cpuUsagePublisher =  new CpuUsagePublisher();
+        scheduler.scheduleAtFixedRate(() -> cpuUsagePublisher.publishCpuUsage(), 0, 10, TimeUnit.SECONDS);
     }
 
 
