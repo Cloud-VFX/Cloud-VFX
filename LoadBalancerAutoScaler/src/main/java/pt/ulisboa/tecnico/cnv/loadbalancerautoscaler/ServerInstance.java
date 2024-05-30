@@ -1,17 +1,17 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
 public class ServerInstance {
     private String instanceId;
     private String address;
     private float totalComplexity; // TODO: what data type should we use here?
 
-    /** 
+    /**
      * Constructor for ServerInstance with instance ID and address initialization.
      */
     public ServerInstance(String instanceId, String address) {
         this.instanceId = instanceId;
         this.address = address;
-        this.totalComplexity = 0.0f; 
+        this.totalComplexity = 0.0f;
     }
 
     // Getters for instance ID and address
@@ -25,6 +25,7 @@ public class ServerInstance {
 
     /**
      * Adds complexity to the total complexity count.
+     * 
      * @param complexity amount to add
      */
     public void addComplexity(float complexity) {
@@ -33,6 +34,7 @@ public class ServerInstance {
 
     /**
      * Removes complexity from the total complexity count.
+     * 
      * @param complexity amount to remove
      */
     public void removeComplexity(float complexity) {
@@ -41,6 +43,7 @@ public class ServerInstance {
 
     /**
      * Gets the current total complexity.
+     * 
      * @return total complexity
      */
     public float getTotalComplexity() {
@@ -49,6 +52,7 @@ public class ServerInstance {
 
     /**
      * Converts server instance details to a string format.
+     * 
      * @return String representation of the server instance
      */
     @Override

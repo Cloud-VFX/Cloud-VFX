@@ -47,7 +47,7 @@ public class WebServer {
     public static void main(String[] args) throws Exception {
         System.out.println("Starting WebServer...");
         createMetricsFile();
-        startCpuUsagePublisher();
+        // startCpuUsagePublisher();
 
         // Setup DynamoDB table
         DynamoDBClient.setupTable();

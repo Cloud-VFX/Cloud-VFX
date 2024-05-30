@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;

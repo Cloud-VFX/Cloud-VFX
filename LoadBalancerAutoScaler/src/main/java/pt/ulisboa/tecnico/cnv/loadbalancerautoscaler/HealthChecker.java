@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
 import java.io.IOException;
 import java.net.URI;
@@ -28,7 +28,7 @@ public class HealthChecker {
             System.out.println("No instances available for health check.");
             return;
         }
-        
+
         instances.forEach(this::checkInstanceHealth);
     }
 
@@ -36,15 +36,17 @@ public class HealthChecker {
         HttpClient client = HttpClient.newHttpClient();
         String instanceUrl = "http://" + instance.getAddress() + ":8000/";
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(instanceUrl))
-            .GET()
-            .build();
+                .uri(URI.create(instanceUrl))
+                .GET()
+                .build();
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("Health check for instance " + instance.getInstanceId() + " returned " + response.statusCode() + ": " + response.body());
+            System.out.println("Health check for instance " + instance.getInstanceId() + " returned "
+                    + response.statusCode() + ": " + response.body());
         } catch (IOException | InterruptedException e) {
-            System.out.println("Failed to perform health check for instance " + instance.getInstanceId() + ": " + e.getMessage());
+            System.out.println(
+                    "Failed to perform health check for instance " + instance.getInstanceId() + ": " + e.getMessage());
         }
     }
 }

@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +16,11 @@ public class App {
         String secretKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
         String amiId = "ami-0aa2ea4d2052104b5";
         String instanceType = "t3.micro";
-        
+
         System.out.println("Testing env variables, accessKey: " + accessKey);
-        
+
         AutoScaler autoScaler = new AutoScaler(accessKey, secretKey, amiId, instanceType, keyName, securityGroup);
-        autoScaler.scaleUp();
-        autoScaler.scaleUp();
+        // autoScaler.scaleUp();
 
         LoadBalancer loadBalancer = new LoadBalancer();
         int loadBalancerPort = 8080;

@@ -28,6 +28,25 @@ public class AggregatedMetrics {
         this.Timestamp = Timestamp;
     }
 
+    public double estimateComplexity(double input) {
+        // Input is scaled to the range [0, 1]
+        // Output is scaled to the range [0, 100]
+
+        // Appluy normalization
+        double normalizedInput = (input - MinInput) / (MaxInput - MinInput);
+
+        // Apply the function
+        double output = alpha * normalizedInput + beta;
+        System.out.println("Output: " + output);
+
+        // Apply denormalization
+        // TODO: Check if this is correct
+        output = output * (MaxOutput - MinOutput) + MinOutput;
+        System.out.println("Output after denormalization: " + output);
+
+        return output;
+    }
+
     public double getAlpha() {
         return alpha;
     }

@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -23,7 +23,8 @@ public class AutoScaler {
     private final String securityGroup;
     private final InstanceMonitor instanceMonitor;
 
-    public AutoScaler(String accessKey, String secretKey, String amiId, String instanceType, String keyName, String securityGroup) {
+    public AutoScaler(String accessKey, String secretKey, String amiId, String instanceType, String keyName,
+            String securityGroup) {
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
         this.ec2 = AmazonEC2ClientBuilder.standard()
                 .withRegion(Regions.EU_NORTH_1)

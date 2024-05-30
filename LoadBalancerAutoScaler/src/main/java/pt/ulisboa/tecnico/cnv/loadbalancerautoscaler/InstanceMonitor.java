@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
 import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
 import com.amazonaws.services.cloudwatch.model.*;
@@ -51,7 +51,7 @@ public class InstanceMonitor {
 
         GetMetricStatisticsResult result = cloudWatch.getMetricStatistics(request);
         List<Datapoint> datapoints = result.getDatapoints();
-        
+
         if (!datapoints.isEmpty()) {
             return datapoints.get(0).getAverage();
         } else {
