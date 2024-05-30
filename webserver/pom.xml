@@ -27,6 +27,12 @@
            <artifactId>json</artifactId>
            <version>20240303</version>
       </dependency>
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-cloudwatch</artifactId>
+        <version>1.12.118</version>
+    </dependency>
+
   </dependencies>
 
   <build>

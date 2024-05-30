@@ -3,6 +3,9 @@ package pt.ulisboa.tecnico.cnv.webserver;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import com.sun.net.httpserver.HttpServer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler;
 import pt.ulisboa.tecnico.cnv.imageproc.EnhanceImageHandler;
@@ -22,9 +25,17 @@ public class WebServer {
         file.createNewFile();
     }
 
+    private static void startCpuUsagePublisher() {
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(CpuUsagePublisher::publishCpuUsage, 0, 10, TimeUnit.SECONDS);
+    }
+
+
     public static void main(String[] args) throws Exception {
         System.out.println("Starting WebServer...");
         createMetricsFile();
+        startCpuUsagePublisher();
+
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         server.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
 

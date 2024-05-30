@@ -8,7 +8,9 @@ aws ec2 run-instances \
 	--instance-type t3.micro \
 	--key-name $AWS_KEYPAIR_NAME \
 	--security-group-ids $AWS_SECURITY_GROUP \
-	--monitoring Enabled=true | jq -r ".Instances[0].InstanceId" > instance.id
+	--monitoring Enabled=true \
+	--iam-instance-profile Name=$IAM_ROLE_NAME | jq -r ".Instances[0].InstanceId" > instance.id
+
 echo "New instance with id $(cat instance.id)."
 
 # Wait for instance to be running.
