@@ -1,9 +1,9 @@
 package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
-public class ServerInstance {
+public class ServerInstance implements Comparable<ServerInstance> {
     private String instanceId;
     private String address;
-    private float totalComplexity; // TODO: what data type should we use here?
+    private double totalComplexity;
 
     /**
      * Constructor for ServerInstance with instance ID and address initialization.
@@ -28,7 +28,7 @@ public class ServerInstance {
      * 
      * @param complexity amount to add
      */
-    public void addComplexity(float complexity) {
+    public void addComplexity(double complexity) {
         this.totalComplexity += complexity;
     }
 
@@ -37,7 +37,7 @@ public class ServerInstance {
      * 
      * @param complexity amount to remove
      */
-    public void removeComplexity(float complexity) {
+    public void removeComplexity(double complexity) {
         this.totalComplexity -= complexity;
     }
 
@@ -46,7 +46,7 @@ public class ServerInstance {
      * 
      * @return total complexity
      */
-    public float getTotalComplexity() {
+    public double getTotalComplexity() {
         return totalComplexity;
     }
 
@@ -62,5 +62,10 @@ public class ServerInstance {
                 ", address='" + address + '\'' +
                 ", totalComplexity=" + totalComplexity +
                 '}';
+    }
+
+    @Override
+    public int compareTo(ServerInstance o) {
+        return Double.compare(this.totalComplexity, o.totalComplexity);
     }
 }

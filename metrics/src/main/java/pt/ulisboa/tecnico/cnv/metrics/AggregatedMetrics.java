@@ -28,6 +28,12 @@ public class AggregatedMetrics {
         this.Timestamp = Timestamp;
     }
 
+    /**
+     * Estimate the complexity of a given input
+     * 
+     * @param input
+     * @return estimated complexity [0, 100]
+     */
     public double estimateComplexity(double input) {
         // Input is scaled to the range [0, 1]
         // Output is scaled to the range [0, 100]
@@ -37,13 +43,8 @@ public class AggregatedMetrics {
 
         // Apply the function
         double output = alpha * normalizedInput + beta;
-        System.out.println("Output: " + output);
 
-        // Apply denormalization
-        // TODO: Check if this is correct
-        output = output * (MaxOutput - MinOutput) + MinOutput;
-        System.out.println("Output after denormalization: " + output);
-
+        // Normalization is not needed for the output
         return output;
     }
 
