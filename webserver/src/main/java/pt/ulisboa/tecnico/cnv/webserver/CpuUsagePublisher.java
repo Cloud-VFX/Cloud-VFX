@@ -20,8 +20,8 @@ public class CpuUsagePublisher {
     private static final AmazonCloudWatch cloudWatch = AmazonCloudWatchClientBuilder.standard().build();
     private static String instanceId = null;
 
-    public static void main(String[] args) {
-        instanceId = getInstanceId(); // Retrieve instance ID only once on startup
+    public CpuUsagePublisher() {
+        instanceId = getInstanceId();
     }
 
     public void publishCpuUsage() {
@@ -56,17 +56,28 @@ public class CpuUsagePublisher {
     }
 
     public static String getInstanceId() {
-    HttpClient client = HttpClient.newHttpClient();
-    HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("http://169.254.169.254/latest/meta-data/instance-id"))
-            .GET()
-            .build();
-    try {
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.body();
-    } catch (Exception e) {
-        System.err.println("Error retrieving instance ID: " + e.getMessage());
-        return null;
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest tokenRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://169.254.169.254/latest/api/token"))
+                .header("X-aws-ec2-metadata-token-ttl-seconds", "21600")
+                .method("PUT", HttpRequest.BodyPublishers.noBody())
+                .build();
+    
+        try {
+            HttpResponse<String> tokenResponse = client.send(tokenRequest, HttpResponse.BodyHandlers.ofString());
+            String token = tokenResponse.body();
+    
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://169.254.169.254/latest/meta-data/instance-id"))
+                    .header("X-aws-ec2-metadata-token", token)
+                    .GET()
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        } catch (Exception e) {
+            System.err.println("Error retrieving instance ID: " + e.getMessage());
+            return null;
+        }
     }
-}
+    
 }
