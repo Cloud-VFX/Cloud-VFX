@@ -14,6 +14,10 @@ public class SharedInstanceRegistry {
         instanceMap.remove(instanceId);
     }
 
+    public static ServerInstance getInstance(String instanceId) {
+        return instanceMap.get(instanceId);
+    }
+    
     public static Collection<ServerInstance> getInstances() {
         return instanceMap.values();
     }

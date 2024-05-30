@@ -6,68 +6,42 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class InstanceMonitor {
+class InstanceMonitor {
     private final AmazonCloudWatch cloudWatch;
 
     public InstanceMonitor(AmazonCloudWatch cloudWatch) {
         this.cloudWatch = cloudWatch;
     }
 
-    public void logAverageCPUUsage() {
+    public Map<String, Double> getInstancesCPUUsage() {
+        Map<String, Double> cpuUsages = new HashMap<>();
         Collection<ServerInstance> instances = SharedInstanceRegistry.getInstances();
-        if (instances.isEmpty()) {
-            System.out.println("No instances to monitor.");
-            return;
-        }
-
-        double totalCPUUsage = 0;
-        int instanceCount = 0;
 
         for (ServerInstance instance : instances) {
             double cpuUsage = getInstanceCPUUsage(instance.getInstanceId());
-            if (cpuUsage >= 0) {
-                totalCPUUsage += cpuUsage;
-                instanceCount++;
-            }
+            cpuUsages.put(instance.getInstanceId(), cpuUsage);
         }
 
-        if (instanceCount > 0) {
-            double averageCPUUsage = totalCPUUsage / instanceCount;
-            logCPUUsage(averageCPUUsage);
-        }
+        return cpuUsages;
     }
 
     private double getInstanceCPUUsage(String instanceId) {
         GetMetricStatisticsRequest request = new GetMetricStatisticsRequest()
-                .withNamespace("AWS/EC2")
-                .withMetricName("CPUUtilization")
-                .withDimensions(new Dimension().withName("InstanceId").withValue(instanceId))
-                .withStartTime(new Date(System.currentTimeMillis() - 300000)) // 5 minutes ago
-                .withEndTime(new Date())
-                .withPeriod(60)
-                .withStatistics(Statistic.Average);
+            .withNamespace("Custom/Metrics")
+            .withMetricName("CPUUtilization")
+            .withDimensions(new Dimension().withName("InstanceId").withValue(instanceId))
+            .withStartTime(new Date(System.currentTimeMillis() - 300000)) // 5 minutes ago
+            .withEndTime(new Date())
+            .withPeriod(60)
+            .withStatistics(Statistic.Average);
 
         GetMetricStatisticsResult result = cloudWatch.getMetricStatistics(request);
         List<Datapoint> datapoints = result.getDatapoints();
-        
-        if (!datapoints.isEmpty()) {
-            return datapoints.get(0).getAverage();
-        } else {
-            System.out.println("No data points returned for instance: " + instanceId);
-            return -1;
-        }
-    }
 
-    private void logCPUUsage(double averageCPUUsage) {
-        System.out.println("Average CPU Usage: " + averageCPUUsage + "%");
-
-        try (FileWriter writer = new FileWriter("cpu_usage.log", true)) {
-            writer.write(new Date() + " - Average CPU Usage: " + averageCPUUsage + "%\n");
-        } catch (IOException e) {
-            System.err.println("Failed to log CPU usage: " + e.getMessage());
-            e.printStackTrace();
-        }
+        return datapoints.isEmpty() ? -1 : datapoints.get(0).getAverage();
     }
 }
