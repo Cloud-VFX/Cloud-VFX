@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -22,7 +22,8 @@ public class AutoScaler {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
     private volatile long lastScaleUpTime = 0;
 
-    public AutoScaler(String accessKey, String secretKey, String amiId, String instanceType, String keyName, String securityGroup) {
+    public AutoScaler(String accessKey, String secretKey, String amiId, String instanceType, String keyName,
+            String securityGroup) {
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
         this.ec2 = AmazonEC2ClientBuilder.standard()
                 .withRegion(Regions.EU_NORTH_1)
@@ -51,10 +52,10 @@ public class AutoScaler {
             scaleUp();
             lastScaleUpTime = System.currentTimeMillis();
         }
-    
+
         Collection<ServerInstance> allInstances = SharedInstanceRegistry.getInstances();
         int totalInstances = allInstances.size();
-    
+
         cpuUsages.forEach((instanceId, cpuUsage) -> {
             ServerInstance serverInstance = SharedInstanceRegistry.getInstance(instanceId);
             if (cpuUsage < 15.0 && serverInstance != null && !serverInstance.isMarkedForTermination()) {
@@ -64,42 +65,43 @@ public class AutoScaler {
                 }
             }
         });
-    
-        // Check for instances that are marked for termination and can be safely terminated
+
+        // Check for instances that are marked for termination and can be safely
+        // terminated
         allInstances.stream()
-            .filter(ServerInstance::isMarkedForTermination)
-            .filter(instance -> instance.getNumRunningRequests() == 0)
-            .forEach(instance -> terminateInstance(instance.getInstanceId()));
+                .filter(ServerInstance::isMarkedForTermination)
+                .filter(instance -> instance.getNumRunningRequests() == 0)
+                .forEach(instance -> terminateInstance(instance.getInstanceId()));
     }
-    
+
     private double getAverageCpuUsage(Map<String, Double> cpuUsages) {
         double totalCPUUsage = 0;
         int instanceCount = cpuUsages.size();
-    
+
         for (double usage : cpuUsages.values()) {
             totalCPUUsage += usage;
         }
-    
+
         return instanceCount > 0 ? totalCPUUsage / instanceCount : 0;
     }
-    
+
     private void terminateInstance(String instanceId) {
         TerminateInstancesRequest terminateRequest = new TerminateInstancesRequest()
-            .withInstanceIds(instanceId);
+                .withInstanceIds(instanceId);
         ec2.terminateInstances(terminateRequest);
         SharedInstanceRegistry.removeInstance(instanceId);
         System.out.println("Instance terminated: " + instanceId);
     }
-    
+
     public void scaleUp() {
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
-            .withImageId(amiId)
-            .withInstanceType(instanceType)
-            .withMinCount(1)
-            .withMaxCount(1)
-            .withKeyName(keyName)
-            .withSecurityGroupIds(securityGroup)
-            .withMonitoring(true); // Enable detailed monitoring
+                .withImageId(amiId)
+                .withInstanceType(instanceType)
+                .withMinCount(1)
+                .withMaxCount(1)
+                .withKeyName(keyName)
+                .withSecurityGroupIds(securityGroup)
+                .withMonitoring(true); // Enable detailed monitoring
 
         RunInstancesResult result = ec2.runInstances(runInstancesRequest);
         Instance instance = result.getReservation().getInstances().get(0);
@@ -109,7 +111,7 @@ public class AutoScaler {
         SharedInstanceRegistry.addInstance(instanceId, new ServerInstance(instanceId, instanceAddress));
         System.out.println("Instance launched: " + instanceId + " with DNS: " + instanceAddress);
     }
-    
+
     private String waitForDNS(String instanceId) {
         final int maxRetries = 10;
         final long sleepInterval = 1000; // 1 second
