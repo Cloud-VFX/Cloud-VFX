@@ -75,7 +75,7 @@ def main(image_dir,
                     None) for file in image_files for url in image_urls]
 
     # Multiply the scene files to increase the number of requests
-    scene_files = scene_files * 3
+    scene_files = scene_files * 10
     scene_tasks = [(DataPreparation.prepare_json_payload(file), raytracer_url,
                     file, apply_random_multiplier_on_raytracer_params())
                    for file in scene_files]

@@ -1,13 +1,13 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
-public class ServerInstance {
+public class ServerInstance implements Comparable<ServerInstance> {
     private String instanceId;
     private String address;
     private int numRunningRequests;
-    private float totalComplexity; // TODO: what data type should we use here?
+    private double totalComplexity;
     private boolean markedForTermination;
 
-    /** 
+    /**
      * Constructor for ServerInstance with instance ID and address initialization.
      */
     public ServerInstance(String instanceId, String address) {
@@ -27,51 +27,56 @@ public class ServerInstance {
         return address;
     }
 
-    public boolean isMarkedForTermination(){
+    public boolean isMarkedForTermination() {
         return markedForTermination;
     }
 
-    public void markForTermination(){
+    public void markForTermination() {
         this.markedForTermination = true;
     }
 
-    public void increaseNumRunningRequests(){
+    public void increaseNumRunningRequests() {
         this.numRunningRequests += 1;
     }
 
-    public void decreaseNumRunningRequests(){
+    public void decreaseNumRunningRequests() {
         this.numRunningRequests -= 1;
     }
-    
-    public int getNumRunningRequests(){
+
+    public int getNumRunningRequests() {
         return numRunningRequests;
     }
+
     /**
      * Adds complexity to the total complexity count.
+     * 
      * @param complexity amount to add
      */
-    public void addComplexity(float complexity) {
+    public void addComplexity(double complexity) {
         this.totalComplexity += complexity;
     }
 
     /**
      * Removes complexity from the total complexity count.
+     * 
      * @param complexity amount to remove
      */
-    public void removeComplexity(float complexity) {
+    public void removeComplexity(double complexity) {
         this.totalComplexity -= complexity;
     }
 
     /**
      * Gets the current total complexity.
+     * 
      * @return total complexity
      */
-    public float getTotalComplexity() {
+    public double getTotalComplexity() {
         return totalComplexity;
     }
 
     /**
      * Converts server instance details to a string format.
+     * 
      * @return String representation of the server instance
      */
     @Override
@@ -81,5 +86,10 @@ public class ServerInstance {
                 ", address='" + address + '\'' +
                 ", totalComplexity=" + totalComplexity +
                 '}';
+    }
+
+    @Override
+    public int compareTo(ServerInstance o) {
+        return Double.compare(this.totalComplexity, o.totalComplexity);
     }
 }

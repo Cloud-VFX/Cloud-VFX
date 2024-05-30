@@ -22,6 +22,10 @@ webserver:
 	@echo "Building and running Web Server..."
 	$(MAKE) run PROJECT=webserver CLASS=pt.ulisboa.tecnico.cnv.webserver.WebServer ARGS=""
 
+loadbalancerautoscaler:
+	@echo "Building and running Load Balancer Auto Scaler..."
+	$(MAKE) run PROJECT=LoadBalancerAutoScaler CLASS=pt.ulisboa.tecnico.cnv.loadbalancerautoscaler.App ARGS=""
+
 webserver-javassist:
 	@echo "Building and running Web Server with Javassist..."
 	$(MAKE) run-javassist PROJECT=webserver CLASS=pt.ulisboa.tecnico.cnv.webserver.WebServer JAVASSIST_TOOL=$(JAVASSIST_TOOL) ARGS=""
@@ -67,4 +71,4 @@ help:
 	@echo "  webserver         : Build and run Web Server"
 	@echo "  help              : Show this help message"
 
-.PHONY: raytracer imageproc-blur imageproc-enhance webserver build run help
+.PHONY: raytracer imageproc-blur imageproc-enhance webserver build run help raytracer-input run-javassist webserver-javassist loadbalancerautoscaler

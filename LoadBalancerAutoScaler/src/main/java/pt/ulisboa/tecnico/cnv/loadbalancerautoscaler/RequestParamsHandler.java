@@ -1,4 +1,4 @@
-package pt.ulisboa.tecnico.cnv;
+package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class RequestParamsHandler {
         } else if (requestUri.getPath().contains("enhanceimage")) {
             return "enhance";
         }
-        return "unknown";  // Handle error or default case as needed
+        return "unknown"; // Handle error or default case as needed
     }
 
     public Map<String, Object> getRequestDetails() {
@@ -64,7 +64,8 @@ public class RequestParamsHandler {
     }
 
     private boolean hasTextureMap() {
-        if (!requestType.equals("raytracer")) return false;
+        if (!requestType.equals("raytracer"))
+            return false;
         try {
             JSONObject json = new JSONObject(payload);
             return json.has("texmap");

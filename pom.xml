@@ -21,6 +21,8 @@
     <module>raytracer</module>
     		
     <module>imageproc</module>
+
+    <module>LoadBalancerAutoScaler</module>
     
     <module>metrics</module>
     		
