@@ -10,7 +10,7 @@ public class GenerateMetrics extends AbstractJavassistTool {
     }
 
     private final String MetricsContextDeclaringClass = "pt.ulisboa.tecnico.cnv.webserver.MetricsContext";
-    private final String RequestMetricsDeclaringClass = "pt.ulisboa.tecnico.cnv.webserver.RequestMetrics";
+    private final String RequestMetricsDeclaringClass = "pt.ulisboa.tecnico.cnv.metrics.RequestMetrics";
     private final String MetricsMiddlewareDeclaringClass = "pt.ulisboa.tecnico.cnv.webserver.MetricsMiddleware";
 
     private final String BlurImageHandlerDeclaringClass = "pt.ulisboa.tecnico.cnv.imageproc.BlurImageHandler";
