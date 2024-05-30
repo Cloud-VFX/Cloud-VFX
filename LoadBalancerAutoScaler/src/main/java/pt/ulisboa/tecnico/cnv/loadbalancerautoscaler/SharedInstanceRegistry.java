@@ -26,6 +26,10 @@ public class SharedInstanceRegistry {
         }
     }
 
+    public static ServerInstance getInstance(String instanceId) {
+        return instanceMap.get(instanceId);
+    }
+
     public static synchronized void updateInstanceComplexity(String instanceId, double newComplexity,
             UpdateComplexityType type) {
         ServerInstance instance = instanceMap.get(instanceId);

@@ -3,7 +3,9 @@ package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 public class ServerInstance implements Comparable<ServerInstance> {
     private String instanceId;
     private String address;
+    private int numRunningRequests;
     private double totalComplexity;
+    private boolean markedForTermination;
 
     /**
      * Constructor for ServerInstance with instance ID and address initialization.
@@ -12,6 +14,8 @@ public class ServerInstance implements Comparable<ServerInstance> {
         this.instanceId = instanceId;
         this.address = address;
         this.totalComplexity = 0.0f;
+        this.numRunningRequests = 0;
+        this.markedForTermination = false;
     }
 
     // Getters for instance ID and address
@@ -21,6 +25,26 @@ public class ServerInstance implements Comparable<ServerInstance> {
 
     public String getAddress() {
         return address;
+    }
+
+    public boolean isMarkedForTermination() {
+        return markedForTermination;
+    }
+
+    public void markForTermination() {
+        this.markedForTermination = true;
+    }
+
+    public void increaseNumRunningRequests() {
+        this.numRunningRequests += 1;
+    }
+
+    public void decreaseNumRunningRequests() {
+        this.numRunningRequests -= 1;
+    }
+
+    public int getNumRunningRequests() {
+        return numRunningRequests;
     }
 
     /**

@@ -13,7 +13,7 @@ echo "Java, Maven, and other dependencies installed."
 # Zip the project.
 echo "Zipping the project..."
 cd "$DIR"/../
-zip -r $DIR/project.zip imageproc raytracer JavassistWrapper webserver Makefile pom.xml
+zip -r $DIR/project.zip imageproc raytracer JavassistWrapper webserver metrics Makefile pom.xml
 cd $DIR
 echo "Project zipped."
 
