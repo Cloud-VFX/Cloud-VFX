@@ -40,6 +40,22 @@ run-javassist:
 	@echo "Running $(PROJECT)... with Javassist"
 	$(JAVA) -cp $(PROJECT)/target/$(PROJECT)-1.0.0-SNAPSHOT-jar-with-dependencies.jar -javaagent:JavassistWrapper/target/JavassistWrapper-1.0-jar-with-dependencies.jar=$(JAVASSIST_TOOL):pt.ulisboa.tecnico.cnv.webserver,pt.ulisboa.tecnico.cnv.imageproc,pt.ulisboa.tecnico.cnv.raytracer:output $(CLASS) $(INPUT_FILE) $(OUTPUT_FILE) $(ARGS)
 
+input_file_with_extension := $(INPUT_FILE)
+input_file_without_extension := $(basename $(input_file_with_extension))
+
+raytracer-input:
+	@echo "Generating Ray Tracer input..."
+	cat $(INPUT_FILE) | jq -sR '{"scene": .}' > $(input_file_without_extension).json
+	# Check if $(textmap) is not empty
+	if [ -n "$(textmap)" ]; then \
+		hexdump -ve '1/1 "%u\n"' $(textmap) | jq -s --argjson original "$$(<$(input_file_without_extension).json)" '$$original + {texmap: .}' > $(input_file_without_extension)_temp.json; \
+		mv $(input_file_without_extension)_temp.json $(input_file_without_extension).json; \
+	fi
+	curl -X POST http://127.0.0.1:8000/raytracer?scols=400\&srows=300\&wcols=400\&wrows=300\&coff=0\&roff=0\&aa=false --data @"./$(input_file_without_extension).json" > $(input_file_without_extension)_out.txt
+	sed -i '' 's/^[^,]*,//'  $(input_file_without_extension)_out.txt
+	base64 -D -i $(input_file_without_extension)_out.txt > $(input_file_without_extension)_out.bmp
+	rm $(input_file_without_extension).json
+	rm $(input_file_without_extension)_out.txt
 # Help target
 help:
 	@echo "Usage: make [target]"

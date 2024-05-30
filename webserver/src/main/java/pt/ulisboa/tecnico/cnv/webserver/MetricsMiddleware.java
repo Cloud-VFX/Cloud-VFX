@@ -4,13 +4,18 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 
+import pt.ulisboa.tecnico.cnv.metrics.MetricsDAO;
+import pt.ulisboa.tecnico.cnv.metrics.RequestMetrics;
+
 public class MetricsMiddleware implements HttpHandler {
     private HttpHandler handler;
+    private MetricsDAO metricsDAO;
 
     public static final String METRICS_FILE = "metrics.log";
 
     public MetricsMiddleware(HttpHandler handler) {
         this.handler = handler;
+        this.metricsDAO = new MetricsDAO();
     }
 
     private void appendMetricsToFile(RequestMetrics metrics) throws IOException {
@@ -31,14 +36,18 @@ public class MetricsMiddleware implements HttpHandler {
         try {
             MetricsContext.start();
             handler.handle(he);
-        } finally {
             MetricsContext.end();
             RequestMetrics metrics = MetricsContext.getMetrics();
-
             // Append the metrics to the metrics file
             appendMetricsToFile(metrics);
-
+            // Save the metrics to the database
+            metricsDAO.createMetrics(metrics);
             System.out.println("Metrics: " + metrics.toJSON());
+            System.out.println("Metrics saved to file and database.");
+        } catch (Exception e) {
+            System.err.println("Error handling request: " + e.getMessage());
+            // Don't save metrics if an error occurred
+            return;
         }
     }
 }
