@@ -6,3 +6,5 @@ __pycache__
 *.txt
 *.log
 *.json
+!inputs/**
+!inputs/*.txt

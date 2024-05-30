@@ -1,5 +1,7 @@
 package pt.ulisboa.tecnico.cnv.webserver;
 
+import pt.ulisboa.tecnico.cnv.metrics.RequestMetrics;
+
 public class MetricsContext {
     /**
      * ThreadLocal to store the metrics of the request
