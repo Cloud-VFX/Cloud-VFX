@@ -43,6 +43,18 @@ def create_session_folder(base_path):
     return session_path
 
 
+def apply_random_multiplier_on_raytracer_params():
+    """Apply a random multiplier on the raytracer parameters."""
+    random_multiplier = random.uniform(0.5, 2.0)
+    params_copy = RAYTRACER_QUERY_PARAMS.copy()
+    params_copy['scols'] = int(params_copy['scols'] * random_multiplier)
+    params_copy['srows'] = int(params_copy['srows'] * random_multiplier)
+    params_copy['wcols'] = int(params_copy['wcols'] * random_multiplier)
+    params_copy['wrows'] = int(params_copy['wrows'] * random_multiplier)
+
+    return params_copy
+
+
 def main(image_dir,
          scene_dir,
          truth_dir,
@@ -61,8 +73,12 @@ def main(image_dir,
 
     image_tasks = [(DataPreparation.encode_image_to_base64(file), url, file,
                     None) for file in image_files for url in image_urls]
+
+    # Multiply the scene files to increase the number of requests
+    scene_files = scene_files * 3
     scene_tasks = [(DataPreparation.prepare_json_payload(file), raytracer_url,
-                    file, RAYTRACER_QUERY_PARAMS) for file in scene_files]
+                    file, apply_random_multiplier_on_raytracer_params())
+                   for file in scene_files]
 
     all_tasks = image_tasks + scene_tasks
     random.shuffle(all_tasks)

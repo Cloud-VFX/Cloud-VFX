@@ -50,13 +50,23 @@ public class WebServer {
         server.createContext("/blurimage", new MetricsMiddleware(new BlurImageHandler()));
         server.createContext("/enhanceimage", new MetricsMiddleware(new EnhanceImageHandler()));
 
-        System.out.println("WebServer started on port 8000");
+        // TODO: temporary endpoint to trigger aggregation
+        server.createContext("/aggregate", (exchange -> {
+            handleAggregation(new MetricsAggregator());
+            exchange.sendResponseHeaders(200, 0);
+            exchange.close();
+        }));
+
         server.start();
 
+        System.out.println("WebServer started on port 8000");
+
         // Scheduled periodic aggregation of metrics
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        MetricsAggregator aggregator = new MetricsAggregator();
-        scheduler.scheduleAtFixedRate(() -> handleAggregation(aggregator), 10, 30, TimeUnit.SECONDS);
+        // TODO: This need to be moved to the LoadBalancer
+        // ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        // MetricsAggregator aggregator = new MetricsAggregator();
+        // scheduler.scheduleAtFixedRate(() -> handleAggregation(aggregator), 10, 30,
+        // TimeUnit.SECONDS);
 
     }
 

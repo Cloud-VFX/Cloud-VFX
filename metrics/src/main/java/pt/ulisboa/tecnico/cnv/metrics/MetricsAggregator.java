@@ -24,6 +24,7 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
         ScanResult result = DynamoDBClient.client.scan(scanRequest);
 
         Map<String, List<RequestMetrics>> metricsByType = new HashMap<>();
+        List<RequestMetrics> allMetrics = new ArrayList<>();
 
         // Group metrics by type
         for (Map<String, AttributeValue> item : result.getItems()) {
@@ -31,21 +32,47 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
                 Item dynamoItem = ItemUtils.toItem(item);
                 RequestMetrics metrics = RequestMetrics.fromItem(dynamoItem);
                 metricsByType.computeIfAbsent(metrics.getMetricType().name(), k -> new ArrayList<>()).add(metrics);
+                allMetrics.add(metrics);
             } catch (IllegalArgumentException e) {
                 System.err.println("Invalid item: " + item);
                 e.printStackTrace();
             }
         }
 
+        // Calculate global min and max for inputs and outputs
+        double globalMinInput = Double.POSITIVE_INFINITY;
+        double globalMaxInput = Double.NEGATIVE_INFINITY;
+        double globalMinOutput = Double.POSITIVE_INFINITY;
+        double globalMaxOutput = Double.NEGATIVE_INFINITY;
+
+        for (RequestMetrics metrics : allMetrics) {
+            double input_normalizing = metrics.getMetricType() == RequestMetrics.MetricType.RAYTRACER
+                    ? metrics.getSInputSize() + (metrics.getTextureMap() ? 1 : 0)
+                    : metrics.getImageSize();
+            double output_normalizing = 0.7 * metrics.getNumberOfInstructions() + 0.2 * metrics.getNumberOfBlocks()
+                    + 0.1 * metrics.getProcessingTime();
+
+            if (input_normalizing < globalMinInput)
+                globalMinInput = input_normalizing;
+            if (input_normalizing > globalMaxInput)
+                globalMaxInput = input_normalizing;
+            if (output_normalizing < globalMinOutput)
+                globalMinOutput = output_normalizing;
+            if (output_normalizing > globalMaxOutput)
+                globalMaxOutput = output_normalizing;
+        }
+
         // Aggregate and train model for each type
         for (Map.Entry<String, List<RequestMetrics>> entry : metricsByType.entrySet()) {
+            System.out.println("Aggregating and training model for " + entry.getKey());
             String metricType = entry.getKey();
             List<RequestMetrics> metrics = entry.getValue();
             if (metrics.isEmpty())
                 continue;
 
             // Train model
-            ModelCoefficients coefficients = trainModel(metricType, metrics);
+            ModelCoefficients coefficients = trainModel(metricType, metrics, globalMinInput, globalMaxInput,
+                    globalMinOutput, globalMaxOutput);
 
             // Ensure coefficients are finite
             if (!Double.isFinite(coefficients.alpha) || !Double.isFinite(coefficients.beta)) {
@@ -58,6 +85,11 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
             JSONObject coeffsJson = new JSONObject();
             coeffsJson.put("Alpha", coefficients.alpha);
             coeffsJson.put("Beta", coefficients.beta);
+            coeffsJson.put("Function", coefficients.function);
+            coeffsJson.put("MaxInput", globalMaxInput);
+            coeffsJson.put("MinInput", globalMinInput);
+            coeffsJson.put("MaxOutput", globalMaxOutput);
+            coeffsJson.put("MinOutput", globalMinOutput);
 
             Item aggregatedItem = new Item()
                     .withPrimaryKey("MetricType", metricType, "Timestamp", String.valueOf(timestamp))
@@ -69,7 +101,14 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
         return "Aggregation and model training complete";
     }
 
-    private ModelCoefficients trainModel(String metricType, List<RequestMetrics> metrics) {
+    private ModelCoefficients trainModel(String metricType, List<RequestMetrics> metrics, double globalMinInput,
+            double globalMaxInput, double globalMinOutput, double globalMaxOutput) {
+        System.out.println("Training model for " + metricType);
+        // PRint the first 5 metrics
+        for (int i = 0; i < Math.min(5, metrics.size()); i++) {
+            System.out.println(metrics.get(i).toString());
+        }
+
         // Extract inputs and outputs for linear regression
         List<Double> inputs = new ArrayList<>();
         List<Double> outputs = new ArrayList<>();
@@ -89,7 +128,7 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
                 // Handle multidimensional input for raytracer
                 // This is a placeholder for more complex multidimensional regression logic
                 for (RequestMetrics metric : metrics) {
-                    double input = metric.getSInputSize() + metric.getWInputSize() + (metric.getTextureMap() ? 1 : 0);
+                    double input = metric.getSInputSize() + (metric.getTextureMap() ? 1 : 0);
                     double output = 0.7 * metric.getNumberOfInstructions() + 0.2 * metric.getNumberOfBlocks()
                             + 0.1 * metric.getProcessingTime();
                     inputs.add(input);
@@ -98,8 +137,19 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
                 break;
         }
 
+        // Normalize inputs globally to [0, 1]
+        for (int i = 0; i < inputs.size(); i++) {
+            inputs.set(i, (inputs.get(i) - globalMinInput) / (globalMaxInput - globalMinInput));
+        }
+
+        // Normalize outputs globally to [0, 100]
+        for (int i = 0; i < outputs.size(); i++) {
+            outputs.set(i, 100 * (outputs.get(i) - globalMinOutput) / (globalMaxOutput - globalMinOutput));
+        }
+
         // Perform linear regression to find the best fit line
-        double[] coefficients = linearRegression(inputs, outputs);
+        double lambda = 0.1; // Regularization parameter
+        double[] coefficients = linearRegressionWithL2(inputs, outputs, lambda);
         double alpha = coefficients[0];
         double beta = coefficients[1];
 
@@ -108,7 +158,10 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
         return new ModelCoefficients(alpha, beta, function);
     }
 
-    private double[] linearRegression(List<Double> x, List<Double> y) {
+    private double[] linearRegressionWithL2(List<Double> x, List<Double> y, double lambda) {
+        System.out.println("Performing linear regression with L2 regularization with " + x.size() + " data points");
+        System.out.println("X: " + x);
+        System.out.println("Y: " + y);
         int n = x.size();
         double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
 
@@ -123,7 +176,7 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
         double yMean = sumY / n;
 
         double numerator = sumXY - (sumX * sumY / n);
-        double denominator = sumX2 - (sumX * sumX / n);
+        double denominator = sumX2 - (sumX * sumX / n) + lambda;
 
         double alpha = numerator / denominator;
         double beta = yMean - alpha * xMean;
@@ -134,6 +187,7 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
     static class ModelCoefficients {
         double alpha;
         double beta;
+
         String function;
 
         ModelCoefficients(double alpha, double beta, String function) {
