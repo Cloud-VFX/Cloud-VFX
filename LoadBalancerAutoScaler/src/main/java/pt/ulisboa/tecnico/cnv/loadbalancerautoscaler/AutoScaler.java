@@ -18,12 +18,13 @@ public class AutoScaler {
     private final String instanceType;
     private final String keyName;
     private final String securityGroup;
+    private final String iamRole;
     private final InstanceMonitor instanceMonitor;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
     private volatile long lastScaleUpTime = 0;
 
     public AutoScaler(String accessKey, String secretKey, String amiId, String instanceType, String keyName,
-            String securityGroup) {
+            String securityGroup, String iamRole) {
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
         this.ec2 = AmazonEC2ClientBuilder.standard()
                 .withRegion(Regions.EU_NORTH_1)
@@ -38,7 +39,9 @@ public class AutoScaler {
         this.keyName = keyName;
         this.securityGroup = securityGroup;
         this.instanceMonitor = new InstanceMonitor(cloudWatch);
+        this.iamRole = iamRole;
 
+        // TODO move to webserver
         scheduler.scheduleAtFixedRate(this::monitorAndScale, 0, 10, TimeUnit.SECONDS);
     }
 
@@ -48,7 +51,8 @@ public class AutoScaler {
         System.out.println("CPU Usages: " + cpuUsages);
         System.out.println("AvgCpu Usage: " + averageCPUUsage);
 
-        if (averageCPUUsage > 90.0 && (System.currentTimeMillis() - lastScaleUpTime) > 300000) {
+        if (averageCPUUsage > 90.0 && (System.currentTimeMillis() - lastScaleUpTime) > 60000) {
+            
             scaleUp();
             lastScaleUpTime = System.currentTimeMillis();
         }
@@ -56,16 +60,19 @@ public class AutoScaler {
         Collection<ServerInstance> allInstances = SharedInstanceRegistry.getInstances();
         int totalInstances = allInstances.size();
 
-        cpuUsages.forEach((instanceId, cpuUsage) -> {
+        for (Map.Entry<String, Double> entry : cpuUsages.entrySet()) {
+            String instanceId = entry.getKey();
+            Double cpuUsage = entry.getValue();
             ServerInstance serverInstance = SharedInstanceRegistry.getInstance(instanceId);
-            if (cpuUsage < 15.0 && serverInstance != null && !serverInstance.isMarkedForTermination()) {
-                if (totalInstances > 2) { // Only mark for termination if there are more than two instances
+            
+            if (cpuUsage > 0 && cpuUsage < 15.0 && serverInstance != null && !serverInstance.isMarkedForTermination()) {
+                if (totalInstances > 1) {
                     serverInstance.markForTermination();
                     System.out.println("Instance marked for termination: " + instanceId);
+                    break;
                 }
             }
-        });
-
+        }
         // Check for instances that are marked for termination and can be safely
         // terminated
         allInstances.stream()
@@ -86,6 +93,8 @@ public class AutoScaler {
     }
 
     private void terminateInstance(String instanceId) {
+        System.out.println("Terminating instance"+ instanceId);
+
         TerminateInstancesRequest terminateRequest = new TerminateInstancesRequest()
                 .withInstanceIds(instanceId);
         ec2.terminateInstances(terminateRequest);
@@ -94,6 +103,10 @@ public class AutoScaler {
     }
 
     public void scaleUp() {
+        System.out.println("Scaling up!");
+        IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification()
+        .withName(iamRole);
+
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
                 .withImageId(amiId)
                 .withInstanceType(instanceType)
@@ -101,6 +114,7 @@ public class AutoScaler {
                 .withMaxCount(1)
                 .withKeyName(keyName)
                 .withSecurityGroupIds(securityGroup)
+                .withIamInstanceProfile(iamInstanceProfile) // Setting the IAM role
                 .withMonitoring(true); // Enable detailed monitoring
 
         RunInstancesResult result = ec2.runInstances(runInstancesRequest);

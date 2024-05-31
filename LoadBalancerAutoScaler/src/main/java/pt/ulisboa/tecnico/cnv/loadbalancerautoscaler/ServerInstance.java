@@ -85,6 +85,7 @@ public class ServerInstance implements Comparable<ServerInstance> {
                 "instanceId='" + instanceId + '\'' +
                 ", address='" + address + '\'' +
                 ", totalComplexity=" + totalComplexity +
+                ", numRequests=" + numRunningRequests +
                 '}';
     }
 

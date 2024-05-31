@@ -34,9 +34,9 @@ class InstanceMonitor {
             .withNamespace("Custom/Metrics")
             .withMetricName("CPUUtilization")
             .withDimensions(new Dimension().withName("InstanceId").withValue(instanceId))
-            .withStartTime(new Date(System.currentTimeMillis() - 300000)) // 5 minutes ago
+            .withStartTime(new Date(System.currentTimeMillis() - 20000)) // 5 minutes ago
             .withEndTime(new Date())
-            .withPeriod(60)
+            .withPeriod(1)
             .withStatistics(Statistic.Average);
 
         GetMetricStatisticsResult result = cloudWatch.getMetricStatistics(request);
