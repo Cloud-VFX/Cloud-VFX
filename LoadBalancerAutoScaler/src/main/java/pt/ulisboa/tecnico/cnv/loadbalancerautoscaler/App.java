@@ -14,7 +14,12 @@ public class App {
         String securityGroup = dotenv.get("AWS_SECURITY_GROUP");
         String accessKey = dotenv.get("AWS_ACCESS_KEY_ID");
         String secretKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
-        String amiId = "ami-0aa2ea4d2052104b5";
+        String amiId = dotenv.get("AWS_AMI_ID");
+        if (keyName == null || securityGroup == null || accessKey == null || secretKey == null || amiId == null) {
+            System.out.println("Please set the environment variables");
+            System.exit(1);
+        }
+
         String instanceType = "t3.micro";
 
         System.out.println("Testing env variables, accessKey: " + accessKey);
