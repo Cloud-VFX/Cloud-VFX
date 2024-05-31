@@ -131,6 +131,12 @@ public class RequestManager implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         // System.out.println("Received request: " + exchange.getRequestURI());
 
+        // Check if request path is root
+        if (exchange.getRequestURI().getPath().equals("/")) {
+            sendResponse(exchange, "Hello, World!", 200);
+            return;
+        }
+
         // If it's been more than 1 minute since the last update, update the estimators
         if (System.currentTimeMillis() - this.lastTimeEstimatorUpdated > 60000) {
             updateEstimators();
@@ -146,6 +152,11 @@ public class RequestManager implements HttpHandler {
 
         // Calculate the complexity of the request
         String requestType = (String) requestDetails.get("requestType");
+        if (requestType == "unknown") {
+            sendResponse(exchange, "Invalid request type", 400);
+            return;
+        }
+
         int inputSize = (int) requestDetails.get("imageSize");
 
         // Check if requestType is blur or enhance

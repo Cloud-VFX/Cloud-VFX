@@ -38,6 +38,11 @@ public class MetricsMiddleware implements HttpHandler {
             handler.handle(he);
             MetricsContext.end();
             RequestMetrics metrics = MetricsContext.getMetrics();
+            if (metrics.getMetricType() == null) {
+                System.out.println("Metrics type not set. Metrics not saved.");
+                return;
+            }
+
             // Append the metrics to the metrics file
             appendMetricsToFile(metrics);
             // Save the metrics to the database
