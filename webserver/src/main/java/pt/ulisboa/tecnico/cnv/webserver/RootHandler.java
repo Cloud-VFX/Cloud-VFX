@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.cnv.webserver;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 import java.net.URI;
@@ -22,8 +21,7 @@ public class RootHandler implements HttpHandler {
         // Send "Hello, World!" response
         String response = "Hello, World!";
         he.sendResponseHeaders(200, response.length());
-        OutputStream os = he.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+        he.getResponseBody().write(response.getBytes());
+        he.getResponseBody().close();
     }
 }
