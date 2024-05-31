@@ -2,46 +2,16 @@
 
 source config.sh
 
-# Create load balancer and configure health check.
-aws elb create-load-balancer \
-	--load-balancer-name CNV-LoadBalancer \
-	--listeners "Protocol=HTTP,LoadBalancerPort=80,InstanceProtocol=HTTP,InstancePort=8000" \
-	--availability-zones eu-north-1a
+# Step 1: create VM image (AIM).
 
-aws elb configure-health-check \
-	--load-balancer-name CNV-LoadBalancer \
-	--health-check Target=HTTP:8000/,Interval=30,UnhealthyThreshold=2,HealthyThreshold=10,Timeout=5
+source $DIR/create-image.sh
 
-# Create launch configuration.
-aws autoscaling create-launch-configuration \
-	--launch-configuration-name CNV-LaunchConfiguration \
-	--image-id $(cat image.id) \
-	--instance-type t3.micro \
-	--security-groups $AWS_SECURITY_GROUP \
-	--key-name $AWS_KEYPAIR_NAME \
-	--instance-monitoring Enabled=true
+# Step 2: create lambda function.
 
-# Create auto scaling group.
-aws autoscaling create-auto-scaling-group \
-	--auto-scaling-group-name CNV-AutoScalingGroup \
-	--launch-configuration-name CNV-LaunchConfiguration \
-	--load-balancer-names CNV-LoadBalancer \
-	--availability-zones eu-north-1a \
-	--health-check-type ELB \
-	--health-check-grace-period 60 \
-	--min-size 1 \
-	--max-size 3 \
-	--desired-capacity 2
+source $DIR/register-lambdas.sh
 
-# Create target tracking scaling policy to maintain average CPU load at 50%.
-aws autoscaling put-scaling-policy \
-    --auto-scaling-group-name CNV-AutoScalingGroup \
-    --policy-name TargetTrackingPolicy \
-    --policy-type TargetTrackingScaling \
-    --target-tracking-configuration '{
-        "PredefinedMetricSpecification": {
-            "PredefinedMetricType": "ASGAverageCPUUtilization"
-        },
-        "TargetValue": 50.0,
-        "DisableScaleIn": false
-    }'
+# Step 3: Create and start load balancer.
+
+source $DIR/create-and-start-load-balancer.sh
+
+# End of script.

@@ -56,7 +56,7 @@ public class AggregatedDAO {
     public Map<String, AggregatedMetrics> readLatestAggregatedMetricsForAllMetricsTypes() {
         Map<String, AggregatedMetrics> metricsMap = new HashMap<>();
         // Metrics Type
-        String[] metricsType = { "RAYTRACER", "BLURIMAGE", "ENHANCEIMAGE" };
+        String[] metricsType = { "RAYTRACER", "BLUR", "ENHANCE" };
 
         for (String metricType : metricsType) {
             AggregatedMetrics metrics = readLatestAggregatedMetrics(metricType);

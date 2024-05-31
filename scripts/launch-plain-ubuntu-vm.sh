@@ -2,9 +2,11 @@
 
 source config.sh
 
+PLAIN_UBUNTU_AMI="ami-0705384c0b33c194c"
+
 # Run new instance.
 aws ec2 run-instances \
-	--image-id ami-0705384c0b33c194c \
+	--image-id $PLAIN_UBUNTU_AMI \
 	--instance-type t3.micro \
 	--key-name $AWS_KEYPAIR_NAME \
 	--security-group-ids $AWS_SECURITY_GROUP \
