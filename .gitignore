@@ -8,3 +8,5 @@ __pycache__
 *.json
 !inputs/**
 !inputs/*.txt
+!testing_script/**
+!testing_script/*.txt
