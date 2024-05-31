@@ -1,5 +1,10 @@
 package pt.ulisboa.tecnico.cnv.loadbalancerautoscaler;
 
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.services.lambda.AWSLambda;
+import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
+import com.amazonaws.services.lambda.model.InvokeRequest;
+import com.amazonaws.services.lambda.model.InvokeResult;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
@@ -15,6 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
+import org.json.JSONObject;
+
 import java.util.function.Function;
 
 import pt.ulisboa.tecnico.cnv.metrics.AggregatedDAO;
@@ -28,8 +36,12 @@ public class RequestManager implements HttpHandler {
     private Map<String, AggregatedMetrics> latestMetrics;
     private Map<String, Function<Double, Double>> estimators = new HashMap<>();
 
+    private final AWSLambda awsLambda;
     private AtomicInteger amountOfLambdasInstances = new AtomicInteger(0);
     private static final int LAMBDA_THRESHOLD = 5;
+    private static final String ENHANCE_LAMBDA_FUNC_NAME = "EnhanceImageHandler";
+    private static final String BLUR_LAMBDA_FUNC_NAME = "BlurImageHandler";
+    private static final String RAYTRACER_LAMBDA_FUNC_NAME = "RaytracerHandler";
 
     static {
         try {
@@ -45,6 +57,8 @@ public class RequestManager implements HttpHandler {
 
     public RequestManager() {
         updateEstimators();
+        this.awsLambda = AWSLambdaClientBuilder.standard()
+                .withCredentials(new DefaultAWSCredentialsProviderChain()).build();
     }
 
     private void updateEstimators() {
@@ -70,12 +84,48 @@ public class RequestManager implements HttpHandler {
         return amountOfLambdasInstances.get() < LAMBDA_THRESHOLD;
     }
 
-    private void forwardRequestToLambda(HttpExchange exchange, String payload) {
+    private void forwardRequestToLambda(HttpExchange exchange, String requestType, String payload) throws IOException {
         // Update the amount of lambda instances
         int currentAmmountOfLambdasInstances = amountOfLambdasInstances.incrementAndGet();
-        System.out.println("Forwarding request to lambda instance. Current amount of lambda instances: "
-                + currentAmmountOfLambdasInstances);
-        // TODO: Forward the request to a lambda instance
+        System.out.println("Forwarding request to lambda instance");
+
+        // Create the payload for the lambda
+        // Need to have a Map<String, Object> with the following
+        // - fileFormat: String (jpeg)
+        // - body: String (base64 encoded image)
+        Map<String, Object> lambdaPayload = new HashMap<>();
+        lambdaPayload.put("fileFormat", "jpeg");
+        // Need to remove "data:image/jpeg;base64," from the payload
+        String base64Image = payload.split(",")[1];
+        lambdaPayload.put("body", base64Image);
+
+        // Create the request to the lambda
+        JSONObject jsonPayload = new JSONObject(lambdaPayload);
+        String jsonPayloadString = jsonPayload.toString();
+        String functionName = requestType.equalsIgnoreCase("blur") ? BLUR_LAMBDA_FUNC_NAME
+                : requestType.equalsIgnoreCase("enhance") ? ENHANCE_LAMBDA_FUNC_NAME : RAYTRACER_LAMBDA_FUNC_NAME;
+
+        InvokeRequest invokeRequest = new InvokeRequest()
+                .withFunctionName(functionName)
+                .withPayload(jsonPayloadString);
+
+        // Invoke the lambda
+        try {
+            InvokeResult invokeResult = awsLambda.invoke(invokeRequest);
+            // The string comes wrapped in quotes, so we need to remove them
+            String lambdaResponse = new String(invokeResult.getPayload().array());
+            lambdaResponse = lambdaResponse.substring(1, lambdaResponse.length() - 1);
+
+            sendResponse(exchange, lambdaResponse, 200);
+        } catch (Exception e) {
+            logger.severe("Error invoking lambda: " + e.getMessage());
+            sendResponse(exchange, "Internal server error", 500);
+        } finally {
+            // Update the amount of lambda instances
+            amountOfLambdasInstances.decrementAndGet();
+            exchange.close();
+        }
+
     }
 
     @Override
@@ -100,28 +150,16 @@ public class RequestManager implements HttpHandler {
         int inputSize = (int) requestDetails.get("imageSize");
 
         // Check if requestType is blur or enhance
-        if (requestType.equalsIgnoreCase("blur") || requestType.equalsIgnoreCase("enhance")) {
-            if (checkIfLambdaInstancesAvailable()) {
-                forwardRequestToLambda(exchange, payload);
-                // TODO: How can we forward the response from the lambda to the client?
-                return;
-            }
+        if (checkIfLambdaInstancesAvailable()
+                && (requestType.equalsIgnoreCase("blur")
+                        || requestType.equalsIgnoreCase("enhance"))) {
+
+            forwardRequestToLambda(exchange, requestType, payload);
+            return;
         }
 
         Function<Double, Double> estimator = estimators.get(requestType.toLowerCase());
         double complexity = estimator.apply((double) inputSize);
-
-        // TODO: Key Points
-        // -> Fetch the current usage of lambda instances: DONE
-        // If requestType is BLUR, or ENHANCE, forward the request with these
-        // conditions:
-        // -> If the current usage is below a certain threshold, forward the request to
-        // a lambda instance: Almost done
-        // -> If the current usage is above a certain threshold, forward the request to
-        // an EC2 instance
-        // If requestType is RAYTRACER, forward the request to an EC2 instance
-        // Apply algorithm to select the best instance to forward the request
-        // Forward the request to the selected instance
 
         ServerInstance instance = instanceSelector.getInstanceWithLessComplexity();
 
