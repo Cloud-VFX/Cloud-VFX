@@ -47,7 +47,7 @@ public class WebServer {
     public static void main(String[] args) throws Exception {
         System.out.println("Starting WebServer...");
         createMetricsFile();
-        // startCpuUsagePublisher();
+        startCpuUsagePublisher();
 
         // Setup DynamoDB table
         DynamoDBClient.setupTable();
@@ -93,12 +93,6 @@ public class WebServer {
 
         System.out.println("WebServer started on port 8000");
 
-        // Scheduled periodic aggregation of metrics
-        // TODO: This need to be moved to the LoadBalancer
-        // ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        // MetricsAggregator aggregator = new MetricsAggregator();
-        // scheduler.scheduleAtFixedRate(() -> handleAggregation(aggregator), 10, 30,
-        // TimeUnit.SECONDS);
 
     }
 
