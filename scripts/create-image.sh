@@ -22,3 +22,14 @@ echo "Waiting for image to be ready... done! \o/"
 
 # Step 6: terminate the vm instance.
 aws ec2 terminate-instances --instance-ids $(cat instance.id)
+
+# Step 7: Add image.id to the .env file.
+# Check with sed if the flag AWS_AMI_ID is already set.
+if grep -q "AWS_AMI_ID" $DIR/../.env; then
+    # If it is, replace the value.
+    sed -i "s/AWS_AMI_ID=.*/AWS_AMI_ID=$(cat image.id)/" $DIR/../.env
+else
+    # If it isn't, add the line.
+    echo "AWS_AMI_ID=$(cat image.id)" >> $DIR/../.env
+fi
+
