@@ -3,13 +3,13 @@
 source config.sh
 
 # Step 1: launch a vm instance.
-$DIR/launch-vm.sh
+$DIR/launch-plain-ubuntu-vm.sh
 
 # Step 2: install software in the VM instance.
 $DIR/install-vm.sh
 
 # Step 3: test VM instance.
-$DIR/test-vm.sh
+$DIR/test-vm.sh 8000
 
 # Step 4: create VM image (AIM).
 aws ec2 create-image --instance-id $(cat instance.id) --name CNV-Image-Javassist | jq -r .ImageId > image.id
