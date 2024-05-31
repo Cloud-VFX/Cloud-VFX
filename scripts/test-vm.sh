@@ -18,7 +18,8 @@ while ! nc -z $(cat instance.dns) $port; do
 	sleep 0.5
 done
 
-sleep 5
+echo "Waiting... for the service to fully start."
+sleep 10
 
 # Sending a query!
 echo "Sending a query!"
