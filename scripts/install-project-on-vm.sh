@@ -6,7 +6,7 @@ sleep 2
 
 # Install Java, Maven, and other dependencies.
 echo "Installing Java, Maven, and other dependencies..."
-cmd="sudo apt update && sudo apt install openjdk-11-jdk make maven unzip -y"
+cmd="sudo apt update && sudo apt install openjdk-21-jdk make maven unzip -y"
 ssh -o StrictHostKeyChecking=no -i $AWS_EC2_SSH_KEYPAR_PATH ubuntu@$(cat instance.dns) $cmd
 echo "Java, Maven, and other dependencies installed."
 

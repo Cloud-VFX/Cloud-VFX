@@ -18,6 +18,8 @@ while ! nc -z $(cat instance.dns) $port; do
 	sleep 0.5
 done
 
+sleep 5
+
 # Sending a query!
 echo "Sending a query!"
-curl $(cat instance.dns):$port
+curl $(cat instance.dns):$port/
