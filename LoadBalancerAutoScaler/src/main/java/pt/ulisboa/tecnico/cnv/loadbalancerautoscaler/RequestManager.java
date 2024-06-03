@@ -182,7 +182,7 @@ public class RequestManager implements HttpHandler {
         }
 
         // System.out.println("Forwarding Request:\n"+ requestDetails.toString() + "\nTo instance:\n" + instance.toString());
-        System.out.println("Forwarding Request to instance:");
+        System.out.println("Forwarding Request to instance:" + instance.getInstanceId());
         // Add the complexity to the instance
         SharedInstanceRegistry.updateInstanceComplexity(instance.getInstanceId(), complexity,
                 SharedInstanceRegistry.UpdateComplexityType.ADD);

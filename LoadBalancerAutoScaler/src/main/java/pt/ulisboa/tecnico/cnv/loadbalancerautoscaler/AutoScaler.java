@@ -51,7 +51,7 @@ public class AutoScaler {
         System.out.println("CPU Usages: " + cpuUsages);
         System.out.println("AvgCpu Usage: " + averageCPUUsage);
 
-        if (averageCPUUsage > 90.0 && (System.currentTimeMillis() - lastScaleUpTime) > 60000) {
+        if (averageCPUUsage > 75.0 && (System.currentTimeMillis() - lastScaleUpTime) > 60000) {
             
             scaleUp();
             lastScaleUpTime = System.currentTimeMillis();

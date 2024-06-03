@@ -64,7 +64,7 @@ function complex {
 
 req_id=0
 
-while [ $req_id -lt 500 ]; do
+while [ $req_id -lt 100 ]; do
     ((req_id++))
     complex $req_id &
     ((req_id++))
