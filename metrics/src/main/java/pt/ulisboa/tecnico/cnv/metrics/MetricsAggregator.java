@@ -106,7 +106,7 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
         // System.out.println("Training model for " + metricType);
         // PRint the first 5 metrics
         for (int i = 0; i < Math.min(5, metrics.size()); i++) {
-            System.out.println(metrics.get(i).toString());
+            // System.out.println(metrics.get(i).toString());
         }
 
         // Extract inputs and outputs for linear regression

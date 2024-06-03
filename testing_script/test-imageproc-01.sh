@@ -17,7 +17,7 @@ function simple {
     echo -e "data:image/jpg;base64,$(cat temp_simple_imageproc_${req_id}.txt)" > temp_simple_imageproc_${req_id}.txt               
 
     # Send the request.
-    curl -s -X POST http://ec2-13-60-85-58.eu-north-1.compute.amazonaws.com:8080/blurimage --data @"./temp_simple_imageproc_${req_id}.txt" > result_simple_imageproc_${req_id}.txt   
+    curl -s -X POST http://ec2-16-171-249-162.eu-north-1.compute.amazonaws.com:8080/blurimage --data @"./temp_simple_imageproc_${req_id}.txt" > result_simple_imageproc_${req_id}.txt   
     
     # Remove a formatting string (remove everything before the comma).
     sed -i 's/^[^,]*,//' result_simple_imageproc_${req_id}.txt                                          
@@ -45,7 +45,7 @@ function complex {
     echo -e "data:image/jpg;base64,$(cat temp_complex_imageproc_${req_id}.txt)" > temp_complex_imageproc_${req_id}.txt               
 
     # Send the request.
-    curl -s -X POST http://ec2-13-60-85-58.eu-north-1.compute.amazonaws.com:8080/enhanceimage --data @"./temp_complex_imageproc_${req_id}.txt" > result_complex_imageproc_${req_id}.txt   
+    curl -s -X POST http://ec2-16-171-249-162.eu-north-1.compute.amazonaws.com:8080/enhanceimage --data @"./temp_complex_imageproc_${req_id}.txt" > result_complex_imageproc_${req_id}.txt   
     
     # Remove a formatting string (remove everything before the comma).
     sed -i 's/^[^,]*,//' result_complex_imageproc_${req_id}.txt                                          
@@ -75,5 +75,5 @@ while [ $req_id -lt 100 ]; do
     complex $req_id &
     ((req_id++))
     simple $req_id &
-    sleep 0.5
+    sleep 1
 done

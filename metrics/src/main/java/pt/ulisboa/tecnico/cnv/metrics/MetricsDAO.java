@@ -79,7 +79,7 @@ public class MetricsDAO {
 
         UpdateItemOutcome outcome = table.updateItem(updateItemSpec);
 
-        System.out.println("UpdateItem succeeded:\n" + outcome.getItem().toJSONPretty());
+        // System.out.println("UpdateItem succeeded:\n" + outcome.getItem().toJSONPretty());
     }
 
     /**

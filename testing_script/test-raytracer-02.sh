@@ -13,7 +13,7 @@ function simple {
     # Add scene.txt raw content to JSON.
     cat ./input/test01.txt | jq -sR '{scene: .}' > payload_simple_${req_id}.json                                                                          
     # Send the request.
-    curl -s -X POST http://ec2-13-60-85-58.eu-north-1.compute.amazonaws.com:8080/raytracer?scols=800\&srows=600\&wcols=800\&wrows=600\&coff=0\&roff=0\&aa=false --data @"./payload_simple_${req_id}.json" > result_simple_raytracer_${req_id}.txt   
+    curl -s -X POST http://ec2-16-171-249-162.eu-north-1.compute.amazonaws.com:8080/raytracer?scols=800\&srows=600\&wcols=800\&wrows=600\&coff=0\&roff=0\&aa=false --data @"./payload_simple_${req_id}.json" > result_simple_raytracer_${req_id}.txt   
     # Remove a formatting string (remove everything before the comma).
     sed -i 's/^[^,]*,//' result_simple_raytracer_${req_id}.txt                                                                                             
     base64 -d result_simple_raytracer_${req_id}.txt > ./output/result_simple_raytracer_${req_id}.bmp
@@ -34,7 +34,7 @@ function complex {
     # Add texmap.bmp binary to JSON (optional step, required only for some scenes).
     hexdump -ve '1/1 "%u\n"' ./input/calcada.jpeg | jq -s --argjson original "$(<payload_complex_${req_id}.json)" '$original * {texmap: .}' > payload_complex_${req_id}.json  
     # Send the request.
-    curl -s -X POST http://ec2-13-60-85-58.eu-north-1.compute.amazonaws.com:8080/raytracer?scols=800\&srows=600\&wcols=800\&wrows=600\&coff=0\&roff=0\&aa=false --data @"./payload_complex_${req_id}.json" > result_complex_raytracer_${req_id}.txt   
+    curl -s -X POST http://ec2-16-171-249-162.eu-north-1.compute.amazonaws.com:8080/raytracer?scols=800\&srows=600\&wcols=800\&wrows=600\&coff=0\&roff=0\&aa=false --data @"./payload_complex_${req_id}.json" > result_complex_raytracer_${req_id}.txt   
     # Remove a formatting string (remove everything before the comma).
     sed -i 's/^[^,]*,//' result_complex_raytracer_${req_id}.txt                                                                                             
     base64 -d result_complex_raytracer_${req_id}.txt > ./output/result_complex_raytracer_${req_id}.bmp
@@ -54,5 +54,5 @@ while [ $req_id -lt 100 ]; do
     simple $req_id &
     ((req_id++))
     complex $req_id &
-    sleep 0.5
+    sleep 1
 done
