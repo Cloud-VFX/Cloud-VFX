@@ -164,7 +164,7 @@ public class RequestManager implements HttpHandler {
                 && (requestType.equalsIgnoreCase("blur")
                         || requestType.equalsIgnoreCase("enhance"))) {
             // System.out.println("Forwarding Request to lambda:\n" + requestDetails.toString());
-            // System.out.println("Forwarding Request to lambda:\n");
+            System.out.println("Forwarding Request to lambda:\n");
 
             forwardRequestToLambda(exchange, requestType, payload);
             return;
@@ -182,8 +182,7 @@ public class RequestManager implements HttpHandler {
         }
 
         // System.out.println("Forwarding Request:\n"+ requestDetails.toString() + "\nTo instance:\n" + instance.toString());
-        // System.out.println("Forwarding Request to instance:");
-
+        System.out.println("Forwarding Request to instance:");
         // Add the complexity to the instance
         SharedInstanceRegistry.updateInstanceComplexity(instance.getInstanceId(), complexity,
                 SharedInstanceRegistry.UpdateComplexityType.ADD);

@@ -8,6 +8,7 @@ import os
 import random
 import uuid
 import logging
+import Image
 
 # Initialize Colorama
 init(autoreset=True)
@@ -120,8 +121,8 @@ if __name__ == "__main__":
     scene_dir = "resources/raytracer"
     truth_dir = "resources/truth"
     base_output_path = "output_sessions"
-    server_url = "127.0.0.1"
-    server_port = "8000"
+    server_url = "ec2-13-53-200-114.eu-north-1.compute.amazonaws.com:8080"
+    server_port = "8080"
     image_urls = [
         f"http://{server_url}:{server_port}/{endpoint}"
         for endpoint in ["blurimage", "enhanceimage"]

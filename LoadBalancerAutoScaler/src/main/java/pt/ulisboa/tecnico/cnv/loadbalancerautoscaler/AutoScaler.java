@@ -65,8 +65,8 @@ public class AutoScaler {
             Double cpuUsage = entry.getValue();
             ServerInstance serverInstance = SharedInstanceRegistry.getInstance(instanceId);
             
-            if (cpuUsage > 0 && cpuUsage < 15.0 && serverInstance != null && !serverInstance.isMarkedForTermination()) {
-                if (totalInstances > 1) {
+            if (cpuUsage > 0 && cpuUsage < 15.0 && serverInstance != null && !serverInstance.isMarkedForTermination() && (System.currentTimeMillis() - lastScaleUpTime) > 60000) {
+                if (totalInstances > 2) {
                     serverInstance.markForTermination();
                     System.out.println("Instance marked for termination: " + instanceId);
                     break;

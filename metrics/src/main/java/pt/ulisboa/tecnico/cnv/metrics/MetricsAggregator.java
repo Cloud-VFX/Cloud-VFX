@@ -64,7 +64,7 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
 
         // Aggregate and train model for each type
         for (Map.Entry<String, List<RequestMetrics>> entry : metricsByType.entrySet()) {
-            System.out.println("Aggregating and training model for " + entry.getKey());
+            // System.out.println("Aggregating and training model for " + entry.getKey());
             String metricType = entry.getKey();
             List<RequestMetrics> metrics = entry.getValue();
             if (metrics.isEmpty())
@@ -159,9 +159,9 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
     }
 
     private double[] linearRegressionWithL2(List<Double> x, List<Double> y, double lambda) {
-        System.out.println("Performing linear regression with L2 regularization with " + x.size() + " data points");
-        System.out.println("X: " + x);
-        System.out.println("Y: " + y);
+        // System.out.println("Performing linear regression with L2 regularization with " + x.size() + " data points");
+        // System.out.println("X: " + x);
+        // System.out.println("Y: " + y);
         int n = x.size();
         double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
 

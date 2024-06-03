@@ -26,6 +26,13 @@ public class App {
         String iamRole = dotenv.get("IAM_ROLE_NAME");
         String instanceType = "t3.micro";
         if (keyName == null || securityGroup == null || accessKey == null || secretKey == null || amiId == null) {
+            // System.out.println(keyName);
+            // System.out.println(securityGroup);
+            // System.out.println(accessKey);
+            // System.out.println(secretKey);
+            // System.out.println(amiId);
+            // System.out.println(iamRole);
+            // System.out.println(instanceType);
             System.out.println("Please set the environment variables");
             System.exit(1);
         }

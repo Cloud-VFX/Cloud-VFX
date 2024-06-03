@@ -12,14 +12,14 @@ echo "Rebooting instance to test autostart."
 # Letting the instance shutdown.
 sleep 1
 
-# Wait for port $port to become available.
-while ! nc -z $(cat instance.dns) $port; do
-	echo "Waiting for $(cat instance.dns):$port..."
-	sleep 0.5
-done
+# # Wait for port $port to become available.
+# while ! nc -z $(cat instance.dns) $port; do
+# 	echo "Waiting for $(cat instance.dns):$port..."
+# 	sleep 0.5
+# done
 
 echo "Waiting... for the service to fully start."
-sleep 10
+sleep 60
 
 # Sending a query!
 echo "Sending a query!"

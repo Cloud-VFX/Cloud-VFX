@@ -7,7 +7,7 @@ PLAIN_UBUNTU_AMI="ami-0705384c0b33c194c"
 # Run new instance.
 aws ec2 run-instances \
 	--image-id $PLAIN_UBUNTU_AMI \
-	--instance-type t3.micro \
+	--instance-type t3.large \
 	--key-name $AWS_KEYPAIR_NAME \
 	--security-group-ids $AWS_SECURITY_GROUP \
 	--monitoring Enabled=true \
