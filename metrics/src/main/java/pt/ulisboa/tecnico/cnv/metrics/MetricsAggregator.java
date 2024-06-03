@@ -103,7 +103,7 @@ public class MetricsAggregator implements RequestHandler<Object, String> {
 
     private ModelCoefficients trainModel(String metricType, List<RequestMetrics> metrics, double globalMinInput,
             double globalMaxInput, double globalMinOutput, double globalMaxOutput) {
-        System.out.println("Training model for " + metricType);
+        // System.out.println("Training model for " + metricType);
         // PRint the first 5 metrics
         for (int i = 0; i < Math.min(5, metrics.size()); i++) {
             System.out.println(metrics.get(i).toString());
